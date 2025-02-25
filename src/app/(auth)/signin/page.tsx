@@ -19,7 +19,7 @@ const SignInPage = () => {
   return (
     <div className={styles.signinContainer}>
       <form onSubmit={handleSubmit} className={styles.signinForm}>
-        <h2 className={styles.title}>Sign In</h2>
+        <h2 className={styles.title}>SignIn</h2>
 
         <div className={styles.formGroup}>
           <label htmlFor="email">Email</label>
