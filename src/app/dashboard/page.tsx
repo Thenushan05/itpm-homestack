@@ -25,7 +25,7 @@ import "../shoppingList/page";
 
 const { Header, Sider, Content } = Layout;
 
-const App: React.FC = () => {
+const ShoppingList: React.FC = () => {
   const [collapsed, setCollapsed] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -137,4 +137,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+export default ShoppingList;
