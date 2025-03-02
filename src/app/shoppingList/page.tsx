@@ -8,7 +8,6 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   ShoppingOutlined,
-  UploadOutlined,
   UserOutlined,
   VideoCameraOutlined,
 } from "@ant-design/icons";
@@ -93,9 +92,15 @@ const App: React.FC = () => {
             mode="inline"
             defaultSelectedKeys={["3"]}
             items={[
-              { key: "1", icon: <UserOutlined />, label: "nav 1" },
-              { key: "2", icon: <VideoCameraOutlined />, label: "nav 2" },
-              { key: "3", icon: <UploadOutlined />, label: "nav 3" },
+              { key: "1", icon: <UserOutlined />, label: <Link href="/dashboard">Home</Link> },
+              {
+                key: "2",
+                icon: <VideoCameraOutlined />,
+                label: <Link href="/finance">Finance</Link>,
+              },
+              {   key: "3",
+                icon: <ShoppingOutlined  />,
+                label: <Link href="/shoppingList">ShoppingList</Link>, },
             ]}
           />
         </Drawer>
