@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import '../dashboard/dashboard.sass'
-import'../finance/page';
+import "../dashboard/dashboard.sass";
+import "../finance/page";
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -9,13 +9,23 @@ import {
   UserOutlined,
   VideoCameraOutlined,
 } from "@ant-design/icons";
-import { Button, Layout, Menu, theme, Drawer, Card, Col, Row, Statistic } from "antd";
+import {
+  Button,
+  Layout,
+  Menu,
+  theme,
+  Drawer,
+  Card,
+  Col,
+  Row,
+  Statistic,
+} from "antd";
 import Link from "next/link";
-import ShoppingList from "../shoppingList/page";
+import "../shoppingList/page";
 
 const { Header, Sider, Content } = Layout;
 
-const App: React.FC = () => {
+const ShoppingList: React.FC = () => {
   const [collapsed, setCollapsed] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -70,8 +80,16 @@ const App: React.FC = () => {
             defaultSelectedKeys={["1"]}
             items={[
               { key: "1", icon: <UserOutlined />, label: "Home" },
-              { key: "2", icon: <VideoCameraOutlined />, label: <Link href="/finance">Finance</Link> },
-              { key: "3", icon: <UploadOutlined />, label: "Reports " },
+              {
+                key: "2",
+                icon: <VideoCameraOutlined />,
+                label: <Link href="/finance">Finance</Link>,
+              },
+              {
+                key: "3",
+                icon: <UploadOutlined />,
+                label: <Link href="/shoppingList">ShoppingList</Link>,
+              },
             ]}
           />
         </Sider>
@@ -94,31 +112,29 @@ const App: React.FC = () => {
             borderRadius: borderRadiusLG,
           }}
         >
-         <div>
-    <Row gutter={24}>
-      <Col span={8}>
-        <Card>
-          <Statistic title="Quantity to be Packed" value={228} />
-        </Card>
-      </Col>
-      <Col span={8}>
-        <Card>
-          <Statistic title="Quantity to be Shipped" value={6} />
-        </Card>
-      </Col>
-      <Col span={8}>
-        <Card>
-          <Statistic title="Quantity to be Invoiced" value={474} />
-        </Card>
-      </Col>
-    </Row>
-
-   
-  </div>
+          <div>
+            <Row gutter={24}>
+              <Col span={8}>
+                <Card>
+                  <Statistic title="Quantity to be Packed" value={228} />
+                </Card>
+              </Col>
+              <Col span={8}>
+                <Card>
+                  <Statistic title="Quantity to be Shipped" value={6} />
+                </Card>
+              </Col>
+              <Col span={8}>
+                <Card>
+                  <Statistic title="Quantity to be Invoiced" value={474} />
+                </Card>
+              </Col>
+            </Row>
+          </div>
         </Content>
       </Layout>
     </Layout>
   );
 };
 
-export default App;
+export default ShoppingList;
