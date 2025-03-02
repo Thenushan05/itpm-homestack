@@ -5,6 +5,7 @@ import "../finance/page";
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  ShoppingOutlined,
   UploadOutlined,
   UserOutlined,
   VideoCameraOutlined,
@@ -87,7 +88,7 @@ const ShoppingList: React.FC = () => {
               },
               {
                 key: "3",
-                icon: <UploadOutlined />,
+                icon: <ShoppingOutlined />,
                 label: <Link href="/shoppingList">ShoppingList</Link>,
               },
             ]}
