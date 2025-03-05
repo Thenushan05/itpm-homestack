@@ -1,0 +1,141 @@
+/* styles/SignupForm.module.scss */
+@import '../../sass/custom/index'
+.signup-form-container
+
+    min-height: 100vh
+    width: 100%
+    background: $primary-color
+    display: flex
+    align-items: center
+    justify-content: center
+    position: relative
+
+    @media screen and ( max-width: 992px)
+        background: #ffff
+
+    .login-image
+        width: 100%
+        min-height: 85vh
+
+        @media screen and ( max-width: 992px)
+            display: none
+        img
+            width: 100%
+            height: 100%
+            border-top-left-radius: 16px
+            border-bottom-left-radius: 16px
+
+.signup-form
+
+    background: #fff
+    width: 65%
+    border-radius: 16px
+    min-height: 80vh
+    margin: 50px 0
+    @media screen and ( max-width: 1200px)
+        width: 100%
+        margin: 0
+        border-radius: 0
+
+.signup-inner-form-container
+    position: relative
+    flex-direction: column
+    box-shadow-left: 0 4px 12px rgba(0, 0, 0, 0.1)
+    display: flex
+    align-items: center
+    justify-content: center
+    margin-top: 10px
+    .logo
+        position: absolute
+        top: 0
+        right: 0
+        z-index: 5
+        @media screen and ( max-width: 992px )
+            position: unset !important
+            display: flex
+            align-items: center
+            justify-content: center
+            left: 0
+
+            top: unset !important
+
+        img
+            width: 175px
+            height: 175px
+            @media screen and ( max-width: 992px )
+                width: 280px !important
+                height: 280px !important
+
+    .signup-form-inner
+
+        background-color: white
+        padding: 40px
+        border-radius: 8px
+        /* Subtle shadow effect */
+        width: 100%
+        max-width: 400px
+        text-align: center
+        @media screen and ( max-width: 992px)
+            display: flex
+            justify-content: unset
+            align-items: center
+
+.title
+    font-size: 28px
+    font-weight: bold
+    margin-bottom: 20px
+    color: $secondarycolor
+
+.ant-form-item-label
+    font-weight: 500
+    color: $asset-color
+
+.ant-input,
+.ant-input-password
+
+// .ant-btn-primary
+//     background-color: red
+//     border-color: #1890ff
+//     border-radius: 8px
+//     height: 45px
+//     font-weight: bold
+//     transition: background-color 0.3s ease
+
+//     &:hover,
+//     &:focus
+//         background-color: #40a9ff
+//         border-color: #40a9ff
+
+.ant-checkbox
+    font-size: 14px
+
+    & a
+        color: #1890ff
+        text-decoration: none
+
+    & a:hover
+        text-decoration: underline
+.ant-btn-variant-solid
+    background: #313b48
+.signup-form-inner
+    display: flex
+    align-items: center
+    justify-content: center
+    flex-direction: column
+    position: relative
+    min-height: 85vh
+        // padding: 0 75px
+    @media screen and ( max-width: 992px)
+        padding: 0
+        justify-content: unset
+        height: 95vh
+.ant-checkbox-checked .ant-checkbox-inner
+    background-color: $sub-color !important
+    border-color: $sub-color !important
+.forgot
+    color: $sub-color !important
+.register-nav
+    color: $sub-color
+.enter-mail
+    color: $asset-color
+    margin-bottom: 24px
