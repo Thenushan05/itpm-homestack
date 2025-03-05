@@ -1,35 +1,19 @@
-
 "use client";
 import React, { useState, useEffect } from "react";
 import "../dashboard/dashboard.sass";
-import "../finance/page";
-import "../dashboard/page";
 import {
+  HomeOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   ShoppingOutlined,
-  UploadOutlined,
-  UserOutlined,
   VideoCameraOutlined,
 } from "@ant-design/icons";
-import {
-  Button,
-  Layout,
-  Menu,
-  theme,
-  Drawer,
-  Card,
-  Col,
-  Row,
-  Statistic,
-} from "antd";
+import { Button, Layout, Menu, theme, Drawer } from "antd";
 import Link from "next/link";
-import "../shoppingList/page";
-import ImageToText from "@/components/ImageToText";
 
 const { Header, Sider, Content } = Layout;
 
-const ShoppingList: React.FC = () => {
+const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [collapsed, setCollapsed] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -69,15 +53,21 @@ const ShoppingList: React.FC = () => {
             mode="inline"
             defaultSelectedKeys={["1"]}
             items={[
-              { key: "1", icon: <UserOutlined />, label: <Link href="/dashboard">Home</Link> },
+              {
+                key: "1",
+                icon: <HomeOutlined />,
+                label: <Link href="/dashboard">Home</Link>,
+              },
               {
                 key: "2",
                 icon: <VideoCameraOutlined />,
-                label: <Link href="/finance">Finance</Link>,
+                label: <Link href="/dashboard/finance">Finance </Link>,
               },
-              {   key: "3",
-                icon: <ShoppingOutlined  />,
-                label: <Link href="/shoppingList">ShoppingList</Link>, },
+              {
+                key: "3",
+                icon: <ShoppingOutlined />,
+                label: <Link href="/dashboard/shoppingList">ShoppingList</Link>,
+              },
             ]}
           />
         </Drawer>
@@ -87,18 +77,22 @@ const ShoppingList: React.FC = () => {
           <Menu
             theme="dark"
             mode="inline"
-            defaultSelectedKeys={["2"]}
+            defaultSelectedKeys={["1"]}
             items={[
-              { key: "1", icon: <UserOutlined />, label: <Link href="/dashboard">Home</Link> },
+              {
+                key: "1",
+                icon: <HomeOutlined />,
+                label: <Link href="/dashboard">Home</Link>,
+              },
               {
                 key: "2",
                 icon: <VideoCameraOutlined />,
-                label: <Link href="/finance">Finance</Link>,
+                label: <Link href="/dashboard/finance">Finance</Link>,
               },
               {
                 key: "3",
                 icon: <ShoppingOutlined />,
-                label: <Link href="/shoppingList">ShoppingList</Link>,
+                label: <Link href="/dashboard/shoppingList">ShoppingList</Link>,
               },
             ]}
           />
@@ -122,13 +116,30 @@ const ShoppingList: React.FC = () => {
             borderRadius: borderRadiusLG,
           }}
         >
-            <main className="flex justify-center items-center min-h-screen">
-      <ImageToText />
-    </main>
+          <div>
+            {/* <Row gutter={24}>
+              <Col span={8}>
+                <Card>
+                  <Statistic title="Quantity to be Packed" value={228} />
+                </Card>
+              </Col>
+              <Col span={8}>
+                <Card>
+                  <Statistic title="Quantity to be Shipped" value={6} />
+                </Card>
+              </Col>
+              <Col span={8}>
+                <Card>
+                  <Statistic title="Quantity to be Invoiced" value={474} />
+                </Card>
+              </Col>
+            </Row> */}
+            {children}
+          </div>
         </Content>
       </Layout>
     </Layout>
   );
 };
 
-export default ShoppingList;
+export default DashboardLayout;
