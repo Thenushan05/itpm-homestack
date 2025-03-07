@@ -1,140 +1,40 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import "../dashboard/dashboard.sass";
-import "../finance/page";
-import {
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
-  UploadOutlined,
-  UserOutlined,
-  VideoCameraOutlined,
-} from "@ant-design/icons";
-import {
-  Button,
-  Layout,
-  Menu,
-  theme,
-  Drawer,
-  Card,
-  Col,
-  Row,
-  Statistic,
-} from "antd";
-import Link from "next/link";
-import "../shoppingList/page";
+import React from "react";
+import { Flex, Progress, Slider, Typography } from "antd";
 
-const { Header, Sider, Content } = Layout;
-
-const ShoppingList: React.FC = () => {
-  const [collapsed, setCollapsed] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
-
-  const {
-    token: { colorBgContainer, borderRadiusLG },
-  } = theme.useToken();
-
-  // Detect screen width
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-      if (window.innerWidth > 768) {
-        setCollapsed(false); // Expand sidebar on larger screens
-      } else {
-        setCollapsed(true); // Hide sidebar on mobile
-      }
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
+const Home: React.FC = () => {
+  const [stepsCount, setStepsCount] = React.useState<number>(5);
+  const [stepsGap, setStepsGap] = React.useState<number>(7);
   return (
-    <Layout>
-      {isMobile ? (
-        <Drawer
-          placement="left"
-          closable={false}
-          onClose={() => setCollapsed(true)}
-          open={!collapsed}
-          width={200}
-          bodyStyle={{ padding: 0 }}
-        >
-          <Menu
-            theme="dark"
-            mode="inline"
-            defaultSelectedKeys={["1"]}
-            items={[
-              { key: "1", icon: <UserOutlined />, label: "nav 1" },
-              { key: "2", icon: <VideoCameraOutlined />, label: "nav 2" },
-              { key: "3", icon: <UploadOutlined />, label: "nav 3" },
-            ]}
-          />
-        </Drawer>
-      ) : (
-        <Sider trigger={null} collapsible collapsed={collapsed}>
-          <div className="demo-logo-vertical" />
-          <Menu
-            theme="dark"
-            mode="inline"
-            defaultSelectedKeys={["1"]}
-            items={[
-              { key: "1", icon: <UserOutlined />, label: "Home" },
-              {
-                key: "2",
-                icon: <VideoCameraOutlined />,
-                label: <Link href="/finance">Finance</Link>,
-              },
-              {
-                key: "3",
-                icon: <UploadOutlined />,
-                label: <Link href="/shoppingList">ShoppingList</Link>,
-              },
-            ]}
-          />
-        </Sider>
-      )}
-      <Layout>
-        <Header style={{ padding: 0, background: colorBgContainer }}>
-          <Button
-            type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-            style={{ fontSize: "16px", width: 64, height: 64 }}
-          />
-        </Header>
-        <Content
-          style={{
-            margin: "24px 16px",
-            padding: 24,
-            minHeight: 280,
-            background: colorBgContainer,
-            borderRadius: borderRadiusLG,
-          }}
-        >
-          <div>
-            <Row gutter={24}>
-              <Col span={8}>
-                <Card>
-                  <Statistic title="Quantity to be Packed" value={228} />
-                </Card>
-              </Col>
-              <Col span={8}>
-                <Card>
-                  <Statistic title="Quantity to be Shipped" value={6} />
-                </Card>
-              </Col>
-              <Col span={8}>
-                <Card>
-                  <Statistic title="Quantity to be Invoiced" value={474} />
-                </Card>
-              </Col>
-            </Row>
-          </div>
-        </Content>
-      </Layout>
-    </Layout>
+    <>
+      <Typography.Title level={5}>Custom count:</Typography.Title>
+      <Slider min={2} max={10} value={stepsCount} onChange={setStepsCount} />
+      <Typography.Title level={5}>Custom gap:</Typography.Title>
+      <Slider
+        step={4}
+        min={0}
+        max={40}
+        value={stepsGap}
+        onChange={setStepsGap}
+      />
+      <Flex wrap gap="middle" style={{ marginTop: 16 }}>
+        <Progress
+          type="dashboard"
+          steps={8}
+          percent={50}
+          trailColor="rgba(0, 0, 0, 0.06)"
+          strokeWidth={20}
+        />
+        <Progress
+          type="circle"
+          percent={100}
+          steps={{ count: stepsCount, gap: stepsGap }}
+          trailColor="rgba(0, 0, 0, 0.06)"
+          strokeWidth={20}
+        />
+      </Flex>
+    </>
   );
 };
 
-export default ShoppingList;
+export default Home;
