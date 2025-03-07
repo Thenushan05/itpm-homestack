@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { Form, Input, Button, Checkbox, notification, Spin, Space } from "antd";
+import { Form, Input, Button, notification, Spin, Space } from "antd";
 import "../auth-sass.sass";
 import { Col, Row } from "antd";
 import {
@@ -11,6 +11,7 @@ import {
 } from "@ant-design/icons";
 import { sellit } from "@/assets/images";
 import Image from "next/image";
+import Link from "next/link";
 
 // Define the interface for form values
 interface SignupFormValues {
@@ -153,24 +154,6 @@ const SignupForm = () => {
                     </Space>
                   </Form.Item>
 
-                  <Form.Item
-                    name="agree"
-                    valuePropName="checked"
-                    rules={[
-                      {
-                        required: true,
-                        message: "You must agree to the terms and conditions!",
-                      },
-                    ]}
-                  >
-                    <Checkbox>
-                      I agree to the{" "}
-                      <a href="#" className="register-nav">
-                        terms and conditions
-                      </a>
-                    </Checkbox>
-                  </Form.Item>
-
                   <Form.Item>
                     {loading ? (
                       <Button type="primary" block disabled>
@@ -188,6 +171,12 @@ const SignupForm = () => {
                       </Button>
                     )}
                   </Form.Item>
+                  <p className="register">
+                    Already have an account?{" "}
+                    <Link href="./../signin" className="register-nav">
+                      Sign in
+                    </Link>
+                  </p>
                 </Form>
               </div>
             </div>
