@@ -1,12 +1,7 @@
-import React from 'react'
+import { redirect } from "next/navigation";
 
 function page() {
-  return (
-    <div>
-
-    </div>
-          
-  )
+  return redirect("/signin");
 }
 
-export default page
+export default page;

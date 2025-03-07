@@ -15,7 +15,6 @@ import {
   BellOutlined,
   UserOutlined,
   LogoutOutlined,
-  SettingOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -128,15 +127,11 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         {
           key: "1",
           icon: <UserOutlined />,
-          label: <Link href="/profile">Profile</Link>,
+          label: <Link href="./profile">Profile</Link>,
         },
-        {
-          key: "2",
-          icon: <SettingOutlined />,
-          label: <Link href="/settings">Settings</Link>,
-        },
+
         { type: "divider" },
-        { key: "3", icon: <LogoutOutlined />, label: "Logout" },
+        { key: "2", icon: <LogoutOutlined />, label: "Logout" },
       ]}
     />
   );
