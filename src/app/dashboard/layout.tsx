@@ -1,34 +1,72 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import "../dashboard/dashboard.sass";
+import { logo } from "@/assets/images";
+import Image from "next/image";
 import {
   HomeOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   ShoppingOutlined,
   VideoCameraOutlined,
+  DollarOutlined,
+  ShoppingCartOutlined,
+  CreditCardOutlined,
+  BellOutlined,
+  UserOutlined,
+  LogoutOutlined,
 } from "@ant-design/icons";
-import { Button, Layout, Menu, theme, Drawer } from "antd";
+import {
+  Button,
+  Layout,
+  Menu,
+  Drawer,
+  Badge,
+  Dropdown,
+  Avatar,
+  Popover,
+  List,
+  Modal,
+} from "antd";
 import Link from "next/link";
 
-const { Header, Sider, Content } = Layout;
+const { Header, Sider, Content, Footer } = Layout;
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [collapsed, setCollapsed] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [notifications] = useState([
+    {
+      id: 1,
+      title: "New Order Received",
+      description: "You have a new order from John Doe.",
+    },
+    {
+      id: 2,
+      title: "Payment Successful",
+      description: "Your recent transaction was successful.",
+    },
+    {
+      id: 3,
+      title: "Stock Running Low",
+      description: "Item 'Milk' is running low in stock.",
+    },
+    {
+      id: 4,
+      title: "New Order Received",
+      description: "You have a new order from John Doe.",
+    },
+  ]);
+  const [showAllNotifications, setShowAllNotifications] = useState(false);
+  const [popoverVisible, setPopoverVisible] = useState(false);
 
-  const {
-    token: { colorBgContainer, borderRadiusLG },
-  } = theme.useToken();
-
-  // Detect screen width
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
       if (window.innerWidth > 768) {
-        setCollapsed(false); // Expand sidebar on larger screens
+        setCollapsed(false);
       } else {
-        setCollapsed(true); // Hide sidebar on mobile
+        setCollapsed(true);
       }
     };
 
@@ -37,107 +75,215 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const menuItems = [
+    {
+      key: "1",
+      icon: <HomeOutlined />,
+      label: <Link href="/dashboard">Home</Link>,
+    },
+    {
+      key: "2",
+      icon: <VideoCameraOutlined />,
+      label: "Finance",
+      children: [
+        {
+          key: "2-1",
+          icon: <DollarOutlined />,
+          label: <Link href="/dashboard/finance/overview">Overview</Link>,
+        },
+        {
+          key: "2-2",
+          icon: <CreditCardOutlined />,
+          label: (
+            <Link href="/dashboard/finance/transactions">Transactions</Link>
+          ),
+        },
+      ],
+    },
+    {
+      key: "3",
+      icon: <ShoppingOutlined />,
+      label: "Shopping List",
+      children: [
+        {
+          key: "3-1",
+          icon: <ShoppingCartOutlined />,
+          label: <Link href="/dashboard/shoppingList">Current List</Link>,
+        },
+        {
+          key: "3-2",
+          icon: <ShoppingCartOutlined />,
+          label: (
+            <Link href="/dashboard/shoppingList/history">Purchase History</Link>
+          ),
+        },
+      ],
+    },
+  ];
+
+  const profileMenu = (
+    <Menu
+      items={[
+        {
+          key: "1",
+          icon: <UserOutlined />,
+          label: <Link href="./profile">Profile</Link>,
+        },
+
+        { type: "divider" },
+        { key: "2", icon: <LogoutOutlined />, label: "Logout" },
+      ]}
+    />
+  );
+
+  const notificationContent = (
+    <div>
+      <List
+        dataSource={notifications.slice(0, 3)} // Show only 3 notifications
+        renderItem={(item) => (
+          <List.Item>
+            <List.Item.Meta title={item.title} description={item.description} />
+          </List.Item>
+        )}
+      />
+      <Button
+        type="link"
+        onClick={() => {
+          setPopoverVisible(false); // Hide the popover when clicking to view all notifications
+          setShowAllNotifications(true);
+        }}
+        style={{ width: "100%", textAlign: "center" }}
+      >
+        View All Notifications
+      </Button>
+    </div>
+  );
+
+  const viewAllNotificationsModal = (
+    <Modal
+      visible={showAllNotifications}
+      title="All Notifications"
+      onCancel={() => setShowAllNotifications(false)}
+      footer={null}
+      width="100%"
+      bodyStyle={{ maxHeight: "80vh", overflowY: "auto" }}
+    >
+      <List
+        dataSource={notifications}
+        renderItem={(item) => (
+          <List.Item>
+            <List.Item.Meta title={item.title} description={item.description} />
+          </List.Item>
+        )}
+      />
+    </Modal>
+  );
+
   return (
-    <Layout>
+    <Layout className="dashboard-layout">
       {isMobile ? (
         <Drawer
           placement="left"
           closable={false}
           onClose={() => setCollapsed(true)}
           open={!collapsed}
-          width={200}
+          width={250}
           bodyStyle={{ padding: 0 }}
         >
+          <div className="dashboard-logo">
+            <Image src={logo} alt="Logo" width={120} height={50} />
+          </div>
           <Menu
             theme="dark"
             mode="inline"
             defaultSelectedKeys={["1"]}
-            items={[
-              {
-                key: "1",
-                icon: <HomeOutlined />,
-                label: <Link href="/dashboard">Home</Link>,
-              },
-              {
-                key: "2",
-                icon: <VideoCameraOutlined />,
-                label: <Link href="/dashboard/finance">Finance </Link>,
-              },
-              {
-                key: "3",
-                icon: <ShoppingOutlined />,
-                label: <Link href="/dashboard/shoppingList">ShoppingList</Link>,
-              },
-            ]}
+            items={menuItems}
           />
         </Drawer>
       ) : (
-        <Sider trigger={null} collapsible collapsed={collapsed}>
-          <div className="demo-logo-vertical" />
+        <Sider
+          trigger={null}
+          collapsible
+          collapsed={collapsed}
+          className="dashboard-sider"
+        >
+          <div className="dashboard-logo">
+            <Image
+              src={logo}
+              alt="Logo"
+              width={collapsed ? 1 : 120}
+              height={collapsed ? 1 : 10}
+            />
+          </div>
           <Menu
             theme="dark"
             mode="inline"
             defaultSelectedKeys={["1"]}
-            items={[
-              {
-                key: "1",
-                icon: <HomeOutlined />,
-                label: <Link href="/dashboard">Home</Link>,
-              },
-              {
-                key: "2",
-                icon: <VideoCameraOutlined />,
-                label: <Link href="/dashboard/finance">Finance</Link>,
-              },
-              {
-                key: "3",
-                icon: <ShoppingOutlined />,
-                label: <Link href="/dashboard/shoppingList">ShoppingList</Link>,
-              },
-            ]}
+            defaultOpenKeys={["2", "3"]}
+            items={menuItems}
           />
         </Sider>
       )}
       <Layout>
-        <Header style={{ padding: 0, background: colorBgContainer }}>
+        <Header
+          className={
+            isMobile
+              ? "dashboard-header mobile-header no-bg"
+              : "dashboard-header"
+          }
+        >
           <Button
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
             onClick={() => setCollapsed(!collapsed)}
-            style={{ fontSize: "16px", width: 64, height: 64 }}
+            className="menu-toggle-btn"
           />
+          {!isMobile && (
+            <div className="header-actions">
+              <Popover
+                content={notificationContent}
+                title="Notifications"
+                trigger="click"
+                visible={popoverVisible}
+                onVisibleChange={setPopoverVisible}
+              >
+                <Badge
+                  count={notifications.length}
+                  className="notification-badge"
+                >
+                  <BellOutlined className="notification-icon" />
+                </Badge>
+              </Popover>
+              <Dropdown overlay={profileMenu} trigger={["click"]}>
+                <Avatar className="profile-avatar" icon={<UserOutlined />} />
+              </Dropdown>
+            </div>
+          )}
         </Header>
-        <Content
-          style={{
-            margin: "24px 16px",
-            padding: 24,
-            minHeight: 280,
-            background: colorBgContainer,
-            borderRadius: borderRadiusLG,
-          }}
-        >
-          <div>
-            {/* <Row gutter={24}>
-              <Col span={8}>
-                <Card>
-                  <Statistic title="Quantity to be Packed" value={228} />
-                </Card>
-              </Col>
-              <Col span={8}>
-                <Card>
-                  <Statistic title="Quantity to be Shipped" value={6} />
-                </Card>
-              </Col>
-              <Col span={8}>
-                <Card>
-                  <Statistic title="Quantity to be Invoiced" value={474} />
-                </Card>
-              </Col>
-            </Row> */}
-            {children}
-          </div>
-        </Content>
+        <Content className="dashboard-content">{children}</Content>
+        {isMobile && (
+          <Footer className="dashboard-footer">
+            <Popover
+              content={notificationContent}
+              title="Notifications"
+              trigger="click"
+              visible={popoverVisible}
+              onVisibleChange={setPopoverVisible}
+            >
+              <Badge
+                count={notifications.length}
+                className="notification-badge"
+              >
+                <BellOutlined className="notification-icon" />
+              </Badge>
+            </Popover>
+            <Dropdown overlay={profileMenu} trigger={["click"]}>
+              <Avatar className="profile-avatar" icon={<UserOutlined />} />
+            </Dropdown>
+          </Footer>
+        )}
       </Layout>
+      {viewAllNotificationsModal}
     </Layout>
   );
 };
