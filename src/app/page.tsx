@@ -1,12 +1,15 @@
-import React from 'react'
+"use client";
+import { useRouter } from 'next/navigation';
+import React, { useEffect } from 'react';
 
-function page() {
-  return (
-    <div>
+function Page() {
+  const router = useRouter();
 
-    </div>
-          
-  )
+  useEffect(() => {
+    router.push("/signin");
+  }, []); // Ensures it runs only once when the component mounts
+
+  return <div></div>;
 }
 
-export default page
+export default Page;
