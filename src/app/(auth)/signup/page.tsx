@@ -1,8 +1,9 @@
+
 "use client";
 import React, { useState } from "react";
-import { Form, Input, Button, notification, Spin, Space } from "antd";
-import "../auth-sass.sass";
+import { Form, Input, Button, notification, Spin } from "antd";
 import { Col, Row } from "antd";
+import "../auth-sass.sass";
 import {
   EyeInvisibleOutlined,
   EyeOutlined,
@@ -12,14 +13,14 @@ import {
 import { sellit } from "@/assets/images";
 import Image from "next/image";
 import Link from "next/link";
+import axios from "axios";
 
-// Define the interface for form values
 interface SignupFormValues {
-  name: string;
+  firstname: string;
+  lastname: string;
   email: string;
   password: string;
   confirmPassword: string;
-  agree: boolean;
 }
 
 const SignupForm = () => {
@@ -27,22 +28,47 @@ const SignupForm = () => {
   const [loading, setLoading] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
-  // Handle form submission
-  const onFinish = (values: SignupFormValues) => {
-    setLoading(true); // Show spinner
-    setIsButtonDisabled(true); // Disable the button while loading
-    console.log("Form values:", values);
+  const onFinish = async (values: SignupFormValues) => {
+    setLoading(true);
+    setIsButtonDisabled(true);
 
-    // Simulate a delay for form submission
-    setTimeout(() => {
-      notification.success({
-        message: "Signup Successful!",
-        description: "You have successfully signed up.",
+    try {
+      const response = await axios.post("http://localhost:9095/api/v1/auth/register", 
+      
+       {
+          firstName: values.firstname,
+          lastName: values.lastname,
+          email: values.email,
+          password: values.password,
+        
       });
-      setLoading(false); // Hide spinner
-      setIsButtonDisabled(false); // Re-enable the button
-      form.resetFields(); // Reset form fields
-    }, 2000); // Adjust the timeout duration as necessary
+
+      if(response){
+
+        notification.success({
+          message: "Signup Successful!",
+          description: "You have successfully signed up.",
+        });
+        form.resetFields();
+
+        // redirect to login page
+        setTimeout(() => {
+          window.location.href = "/dashboard";
+        }, 2000);
+      }
+
+
+    } catch (error: any) {
+      console.log("Signup error:", error);
+      
+      notification.error({
+        message: "Signup Failed",
+        description: error.message || "Something went wrong!",
+      });
+    } finally {
+      setLoading(false);
+      setIsButtonDisabled(false);
+    }
   };
 
   return (
@@ -58,100 +84,65 @@ const SignupForm = () => {
             <div className="signup-inner-form-container">
               <div className="signup-form-inner">
                 <h2 className="title">Sign Up</h2>
-                <Form
-                  form={form}
-                  name="signup"
-                  onFinish={onFinish}
-                  initialValues={{
-                    remember: true,
-                  }}
-                  layout="vertical"
-                >
+                <Form form={form} name="signup" onFinish={onFinish} layout="vertical">
                   <Form.Item
-                    label="Full Name"
-                    name="name"
-                    className="input"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please input your full name!",
-                      },
-                    ]}
+                    label="First Name"
+                    name="firstname"
+                    rules={[{ required: true, message: "Please input your first name!" }]}
                   >
-                    <Input
-                      size="large"
-                      placeholder="large size"
-                      suffix={<UserOutlined />}
-                    />
+                    <Input size="large" suffix={<UserOutlined />} />
+                  </Form.Item>
+
+                  <Form.Item
+                    label="Last Name"
+                    name="lastname"
+                    rules={[{ required: true, message: "Please input your last name!" }]}
+                  >
+                    <Input size="large" suffix={<UserOutlined />} />
                   </Form.Item>
 
                   <Form.Item
                     label="Email"
                     name="email"
-                    className="input"
                     rules={[
                       { required: true, message: "Please input your email!" },
                       { type: "email", message: "Please input a valid email!" },
                     ]}
                   >
-                    <Input
-                      size="large"
-                      placeholder="large size"
-                      suffix={<MailOutlined />}
-                    />
+                    <Input size="large" suffix={<MailOutlined />} />
                   </Form.Item>
 
                   <Form.Item
                     label="Password"
                     name="password"
-                    className="input"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please input your password!",
-                      },
-                    ]}
+                    rules={[{ required: true, message: "Please input your password!" }]}
                   >
-                    <Space direction="vertical">
-                      <Input.Password
-                        placeholder="input password"
-                        iconRender={(visible) =>
-                          visible ? <EyeOutlined /> : <EyeInvisibleOutlined />
-                        }
-                      />
-                    </Space>
+                    <Input.Password
+                      placeholder="input password"
+                      iconRender={(visible) => (visible ? <EyeOutlined /> : <EyeInvisibleOutlined />)}
+                    />
                   </Form.Item>
 
                   <Form.Item
                     label="Confirm Password"
                     name="confirmPassword"
-                    className="input"
                     dependencies={["password"]}
                     rules={[
-                      {
-                        required: true,
-                        message: "Please confirm your password!",
-                      },
+                      { required: true, message: "Please confirm your password!" },
                       ({ getFieldValue }) => ({
                         validator(_, value) {
                           if (!value || getFieldValue("password") === value) {
                             return Promise.resolve();
                           }
-                          return Promise.reject(
-                            new Error("Passwords do not match!")
-                          );
+                          return Promise.reject(new Error("Passwords do not match!"));
                         },
                       }),
                     ]}
                   >
-                    <Space direction="vertical">
-                      <Input.Password
-                        placeholder="input password"
-                        iconRender={(visible) =>
-                          visible ? <EyeOutlined /> : <EyeInvisibleOutlined />
-                        }
-                      />
-                    </Space>
+                    <Input.Password
+                      placeholder="confirm password"
+                      iconRender={(visible) => (visible ? <EyeOutlined /> : <EyeInvisibleOutlined />)}
+                    />
                   </Form.Item>
 
                   <Form.Item>
@@ -160,13 +151,7 @@ const SignupForm = () => {
                         <Spin /> Signing Up...
                       </Button>
                     ) : (
-                      <Button
-                        className="primarybtn"
-                        type="primary"
-                        htmlType="submit"
-                        block
-                        disabled={isButtonDisabled}
-                      >
+                      <Button type="primary" htmlType="submit" block disabled={isButtonDisabled}>
                         Sign Up
                       </Button>
                     )}
