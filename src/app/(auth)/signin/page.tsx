@@ -1,18 +1,23 @@
 "use client";
 import React, { useState } from "react";
-import { Form, Input, Button, Checkbox, notification } from "antd";
+import { Form, Input, Button, Checkbox, message, Spin } from "antd"; // Use `message` instead of `notification`
 import Link from "next/link";
 import "../auth-sass.sass";
-import { Col, Row, Spin } from "antd";
+import { Col, Row } from "antd";
 import Image from "next/image";
 import { sellit } from "@/assets/images";
 import { logo } from "@/assets/images";
-import { EyeOutlined, MailOutlined } from "@ant-design/icons";
-import { EyeInvisibleOutlined } from "@ant-design/icons";
+import {
+  EyeOutlined,
+  MailOutlined,
+  EyeInvisibleOutlined,
+} from "@ant-design/icons";
 import { Space } from "antd";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 
 // Define the interface for form values
-interface SignupFormValues {
+interface LoginFormValues {
   email: string;
   password: string;
   remember?: boolean;
@@ -22,27 +27,56 @@ const SignupForm: React.FC = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const router = useRouter();
+  const [messageApi, contextHolder] = message.useMessage();
 
   // Handle form submission
-  const onFinish = (values: SignupFormValues) => {
-    setLoading(true); // Show spinner
-    setIsButtonDisabled(true); // Disable the button while loading
+  const onFinish = async (values: LoginFormValues) => {
+    setLoading(true);
+    setIsButtonDisabled(true);
     console.log("Form values:", values);
 
-    // Simulate a delay for form submission
-    setTimeout(() => {
-      notification.success({
-        message: "Signup Successful!",
-        description: "You have successfully signed up.",
-      });
-      setLoading(false); // Hide spinner
-      setIsButtonDisabled(false); // Re-enable the button
-      form.resetFields(); // Reset the form
-    }, 2000); // Adjust the timeout duration as necessary
+    try {
+      const response = await axios.post(
+        "http://localhost:9095/api/v1/auth/login",
+        {
+          email: values.email,
+          password: values.password,
+        }
+      );
+      console.log(response);
+
+      // Handle successful login
+      if (response.data.token) {
+        messageApi.success("✅ Login Successful! Redirecting...", 2); // Popup toast with 2-second duration
+
+        if (values.remember) {
+          // Save the token to localStorage
+          localStorage.setItem("token", response.data.token);
+        } else {
+          sessionStorage.setItem("token", response.data.token);
+        }
+        // Redirect to the dashboard after 2 seconds
+
+        router.push("/dashboard");
+
+        form.resetFields();
+      } else {
+        console.log("Login failed!");
+        messageApi.error("❌ Invalid credentials. Please try again.", 2); // Error popup toast
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
+      messageApi.error("❌ Login Failed! Something went wrong.", 2);
+    } finally {
+      setLoading(false);
+      setIsButtonDisabled(false);
+    }
   };
 
   return (
     <div className="signup-form-container">
+      {contextHolder}
       <div className="signup-form">
         <Row>
           <Col xs={24} sm={24} md={24} lg={12}>
@@ -130,7 +164,7 @@ const SignupForm: React.FC = () => {
                         htmlType="submit"
                         className="primarybtn"
                         block
-                        disabled={isButtonDisabled} // Disable button during loading
+                        disabled={isButtonDisabled}
                       >
                         Sign In
                       </Button>

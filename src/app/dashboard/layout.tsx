@@ -29,12 +29,19 @@ import {
   Modal,
 } from "antd";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const { Header, Sider, Content, Footer } = Layout;
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [collapsed, setCollapsed] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const router = useRouter();
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
+    router.push("/signin");
+  };
   const [notifications] = useState([
     {
       id: 1,
@@ -123,6 +130,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
   const profileMenu = (
     <Menu
+      onClick={handleLogout}
       items={[
         {
           key: "1",
