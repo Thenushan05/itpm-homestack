@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useState } from "react";
 import { Form, Input, Button, notification, Spin } from "antd";
@@ -33,18 +32,18 @@ const SignupForm = () => {
     setIsButtonDisabled(true);
 
     try {
-      const response = await axios.post("http://localhost:9095/api/v1/auth/register", 
-      
-       {
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/signup",
+
+        {
           firstName: values.firstname,
           lastName: values.lastname,
           email: values.email,
           password: values.password,
-        
-      });
+        }
+      );
 
-      if(response){
-
+      if (response) {
         notification.success({
           message: "Signup Successful!",
           description: "You have successfully signed up.",
@@ -56,11 +55,9 @@ const SignupForm = () => {
           window.location.href = "/dashboard";
         }, 2000);
       }
-
-
     } catch (error: any) {
       console.log("Signup error:", error);
-      
+
       notification.error({
         message: "Signup Failed",
         description: error.message || "Something went wrong!",
@@ -84,11 +81,21 @@ const SignupForm = () => {
             <div className="signup-inner-form-container">
               <div className="signup-form-inner">
                 <h2 className="title">Sign Up</h2>
-                <Form form={form} name="signup" onFinish={onFinish} layout="vertical">
+                <Form
+                  form={form}
+                  name="signup"
+                  onFinish={onFinish}
+                  layout="vertical"
+                >
                   <Form.Item
                     label="First Name"
                     name="firstname"
-                    rules={[{ required: true, message: "Please input your first name!" }]}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please input your first name!",
+                      },
+                    ]}
                   >
                     <Input size="large" suffix={<UserOutlined />} />
                   </Form.Item>
@@ -96,7 +103,12 @@ const SignupForm = () => {
                   <Form.Item
                     label="Last Name"
                     name="lastname"
-                    rules={[{ required: true, message: "Please input your last name!" }]}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please input your last name!",
+                      },
+                    ]}
                   >
                     <Input size="large" suffix={<UserOutlined />} />
                   </Form.Item>
@@ -115,11 +127,18 @@ const SignupForm = () => {
                   <Form.Item
                     label="Password"
                     name="password"
-                    rules={[{ required: true, message: "Please input your password!" }]}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please input your password!",
+                      },
+                    ]}
                   >
                     <Input.Password
                       placeholder="input password"
-                      iconRender={(visible) => (visible ? <EyeOutlined /> : <EyeInvisibleOutlined />)}
+                      iconRender={(visible) =>
+                        visible ? <EyeOutlined /> : <EyeInvisibleOutlined />
+                      }
                     />
                   </Form.Item>
 
@@ -128,20 +147,27 @@ const SignupForm = () => {
                     name="confirmPassword"
                     dependencies={["password"]}
                     rules={[
-                      { required: true, message: "Please confirm your password!" },
+                      {
+                        required: true,
+                        message: "Please confirm your password!",
+                      },
                       ({ getFieldValue }) => ({
                         validator(_, value) {
                           if (!value || getFieldValue("password") === value) {
                             return Promise.resolve();
                           }
-                          return Promise.reject(new Error("Passwords do not match!"));
+                          return Promise.reject(
+                            new Error("Passwords do not match!")
+                          );
                         },
                       }),
                     ]}
                   >
                     <Input.Password
                       placeholder="confirm password"
-                      iconRender={(visible) => (visible ? <EyeOutlined /> : <EyeInvisibleOutlined />)}
+                      iconRender={(visible) =>
+                        visible ? <EyeOutlined /> : <EyeInvisibleOutlined />
+                      }
                     />
                   </Form.Item>
 
@@ -151,7 +177,12 @@ const SignupForm = () => {
                         <Spin /> Signing Up...
                       </Button>
                     ) : (
-                      <Button type="primary" htmlType="submit" block disabled={isButtonDisabled}>
+                      <Button
+                        type="primary"
+                        htmlType="submit"
+                        block
+                        disabled={isButtonDisabled}
+                      >
                         Sign Up
                       </Button>
                     )}
