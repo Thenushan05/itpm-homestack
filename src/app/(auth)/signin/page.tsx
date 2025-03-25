@@ -38,7 +38,7 @@ const SignupForm: React.FC = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:9095/api/v1/auth/login",
+        "http://localhost:5000/api/auth/signin",
         {
           email: values.email,
           password: values.password,
