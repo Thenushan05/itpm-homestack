@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { Form, Input, Button, notification, Spin } from "antd";
+import { Form, Input, Button, notification, Spin, Radio } from "antd";
 import { Col, Row } from "antd";
 import "../auth-sass.sass";
 import {
@@ -20,47 +20,59 @@ interface SignupFormValues {
   email: string;
   password: string;
   confirmPassword: string;
+  role: "owner" | "member";
+  ownerId?: string;
 }
 
 const SignupForm = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [role, setRole] = useState<"owner" | "member">("owner");
 
   const onFinish = async (values: SignupFormValues) => {
     setLoading(true);
     setIsButtonDisabled(true);
 
     try {
+      const payload = {
+        firstName: values.firstname,
+        lastName: values.lastname,
+        email: values.email,
+        password: values.password,
+        role: values.role,
+        ownerId: values.role === "member" ? values.ownerId : undefined, // Only send if member
+      };
+
       const response = await axios.post(
         "http://localhost:5000/api/auth/signup",
-
-        {
-          firstName: values.firstname,
-          lastName: values.lastname,
-          email: values.email,
-          password: values.password,
-        }
+        payload
       );
 
-      if (response) {
+      if (response.status === 201) {
         notification.success({
           message: "Signup Successful!",
           description: "You have successfully signed up.",
         });
         form.resetFields();
 
-        // redirect to login page
+        // Redirect based on user role
         setTimeout(() => {
-          window.location.href = "/dashboard";
+          window.location.href =
+            values.role === "owner" ? "/dashboard" : "/member-dashboard";
         }, 2000);
       }
     } catch (error: any) {
-      console.log("Signup error:", error);
+      console.error("Signup error:", error);
+
+      let errorMessage = "Something went wrong!";
+      if (error.response && error.response.data.message) {
+        errorMessage = error.response.data.message;
+      }
 
       notification.error({
         message: "Signup Failed",
-        description: error.message || "Something went wrong!",
+        description: errorMessage,
       });
     } finally {
       setLoading(false);
@@ -171,6 +183,38 @@ const SignupForm = () => {
                     />
                   </Form.Item>
 
+                  {/* Role Selection */}
+                  <Form.Item
+                    label="Sign up as"
+                    name="role"
+                    initialValue="owner"
+                  >
+                    <Radio.Group
+                      onChange={(e) => setRole(e.target.value)}
+                      value={role}
+                    >
+                      <Radio value="owner">Owner</Radio>
+                      <Radio value="member">Member</Radio>
+                    </Radio.Group>
+                  </Form.Item>
+
+                  {/* Owner ID (Only if Member is selected) */}
+                  {role === "member" && (
+                    <Form.Item
+                      label="Owner ID"
+                      name="ownerId"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please enter the Owner ID!",
+                        },
+                      ]}
+                    >
+                      <Input placeholder="Enter Owner ID" />
+                    </Form.Item>
+                  )}
+
+                  {/* Submit Button */}
                   <Form.Item>
                     {loading ? (
                       <Button type="primary" block disabled>
@@ -187,6 +231,7 @@ const SignupForm = () => {
                       </Button>
                     )}
                   </Form.Item>
+
                   <p className="register">
                     Already have an account?{" "}
                     <Link href="./../signin" className="register-nav">

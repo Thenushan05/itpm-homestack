@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import "../dashboard/dashboard.sass";
-import { logo } from "@/assets/images";
 import Image from "next/image";
 import {
   HomeOutlined,
@@ -30,6 +29,7 @@ import {
 } from "antd";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { expandlogo, homelogo } from "@/assets/images";
 
 const { Header, Sider, Content, Footer } = Layout;
 
@@ -96,14 +96,12 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         {
           key: "2-1",
           icon: <DollarOutlined />,
-          label: <Link href="/dashboard/finance/overview">Overview</Link>,
+          label: <Link href="/dashboard/finance-overview">Overview</Link>,
         },
         {
           key: "2-2",
           icon: <CreditCardOutlined />,
-          label: (
-            <Link href="/dashboard/finance/transactions">Transactions</Link>
-          ),
+          label: <Link href="/dashboard/finance">Transactions</Link>,
         },
       ],
     },
@@ -120,9 +118,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         {
           key: "3-2",
           icon: <ShoppingCartOutlined />,
-          label: (
-            <Link href="/dashboard/shoppingList/history">Purchase History</Link>
-          ),
+          label: <Link href="/dashboard/shoppingList">Purchase History</Link>,
         },
       ],
     },
@@ -130,14 +126,17 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
   const profileMenu = (
     <Menu
-      onClick={handleLogout}
+      onClick={(info) => {
+        if (info.key === "2") {
+          handleLogout();
+        }
+      }}
       items={[
         {
           key: "1",
           icon: <UserOutlined />,
           label: <Link href="./profile">Profile</Link>,
         },
-
         { type: "divider" },
         { key: "2", icon: <LogoutOutlined />, label: "Logout" },
       ]}
@@ -198,9 +197,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           width={250}
           bodyStyle={{ padding: 0 }}
         >
-          <div className="dashboard-logo">
-            <Image src={logo} alt="Logo" width={120} height={50} />
-          </div>
           <Menu
             theme="dark"
             mode="inline"
@@ -216,12 +212,19 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           className="dashboard-sider"
         >
           <div className="dashboard-logo">
-            <Image
-              src={logo}
-              alt="Logo"
-              width={collapsed ? 1 : 120}
-              height={collapsed ? 1 : 10}
-            />
+            {collapsed ? (
+              <Image
+                src={homelogo}
+                alt="Logo"
+                className="dashboard-collapsed-logo"
+              />
+            ) : (
+              <Image
+                src={expandlogo}
+                alt="Logo"
+                className="dashboard-expanded-logo"
+              />
+            )}
           </div>
           <Menu
             theme="dark"
