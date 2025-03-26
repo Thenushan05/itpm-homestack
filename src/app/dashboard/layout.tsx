@@ -96,7 +96,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         {
           key: "2-1",
           icon: <DollarOutlined />,
-          label: <Link href="/dashboard/finance">Overview</Link>,
+          label: <Link href="/dashboard/finance-overview">Overview</Link>,
         },
         {
           key: "2-2",
