@@ -14,6 +14,8 @@ import {
   BellOutlined,
   UserOutlined,
   LogoutOutlined,
+  SunOutlined,
+  MoonOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -66,6 +68,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   ]);
   const [showAllNotifications, setShowAllNotifications] = useState(false);
   const [popoverVisible, setPopoverVisible] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -186,8 +189,14 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     </Modal>
   );
 
+  const switchToDarkLightMode = () => {
+    const element = document.querySelector("html") as HTMLHtmlElement;
+    element.classList.toggle("my-app-dark");
+    setIsDarkMode(!isDarkMode);
+  };
+
   return (
-    <Layout className="dashboard-layout">
+    <Layout className="dashboard-layout  primary-bg">
       {isMobile ? (
         <Drawer
           placement="left"
@@ -200,7 +209,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           <Menu
             theme="dark"
             mode="inline"
-            defaultSelectedKeys={["1"]}
+            // defaultSelectedKeys={["1"]}
             items={menuItems}
           />
         </Drawer>
@@ -251,6 +260,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           />
           {!isMobile && (
             <div className="header-actions">
+              <Button type="link" onClick={() => switchToDarkLightMode()}>
+                {isDarkMode ? <SunOutlined /> : <MoonOutlined />}
+              </Button>
               <Popover
                 content={notificationContent}
                 title="Notifications"
@@ -265,13 +277,14 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                   <BellOutlined className="notification-icon" />
                 </Badge>
               </Popover>
+
               <Dropdown overlay={profileMenu} trigger={["click"]}>
                 <Avatar className="profile-avatar" icon={<UserOutlined />} />
               </Dropdown>
             </div>
           )}
         </Header>
-        <Content className="dashboard-content">{children}</Content>
+        <Content className="dashboard-content  primary-bg">{children}</Content>
         {isMobile && (
           <Footer className="dashboard-footer">
             <Popover

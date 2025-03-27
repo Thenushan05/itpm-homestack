@@ -1,40 +1,109 @@
 "use client";
-import React from "react";
-import { Flex, Progress, Slider, Typography } from "antd";
 
-const Home: React.FC = () => {
-  const [stepsCount, setStepsCount] = React.useState<number>(5);
-  const [stepsGap, setStepsGap] = React.useState<number>(7);
+import { Chart } from "primereact/chart";
+import React, { useState } from "react";
+import "../dashboard/dashboard.sass";
+import { ChartData, ChartOptions } from "chart.js";
+
+const lineData: ChartData = {
+  labels: ["January", "February", "March", "April", "May", "June", "July"],
+  datasets: [
+    {
+      label: "First Dataset",
+      data: [65, 59, 80, 81, 56, 55, 40],
+      fill: false,
+      backgroundColor: "#2f4860",
+      borderColor: "#2f4860",
+      tension: 0.4,
+    },
+    {
+      label: "Second Dataset",
+      data: [28, 48, 40, 19, 86, 27, 90],
+      fill: false,
+      backgroundColor: "#00bb7e",
+      borderColor: "#00bb7e",
+      tension: 0.4,
+    },
+  ],
+};
+
+const Dashboard = () => {
+  const [lineOptions, setLineOptions] = useState<ChartOptions>({});
+
+  const applyLightTheme = () => {
+    const lineOptions: ChartOptions = {
+      plugins: {
+        legend: {
+          labels: {
+            color: "#495057",
+          },
+        },
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: "#495057",
+          },
+          grid: {
+            color: "#ebedef",
+          },
+        },
+        y: {
+          ticks: {
+            color: "#495057",
+          },
+          grid: {
+            color: "#ebedef",
+          },
+        },
+      },
+    };
+
+    setLineOptions(lineOptions);
+  };
+
+  const applyDarkTheme = () => {
+    const lineOptions = {
+      plugins: {
+        legend: {
+          labels: {
+            color: "#ebedef",
+          },
+        },
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: "#ebedef",
+          },
+          grid: {
+            color: "rgba(160, 167, 181, .3)",
+          },
+        },
+        y: {
+          ticks: {
+            color: "#ebedef",
+          },
+          grid: {
+            color: "rgba(160, 167, 181, .3)",
+          },
+        },
+      },
+    };
+
+    setLineOptions(lineOptions);
+  };
+
   return (
-    <>
-      <Typography.Title level={5}>Custom count:</Typography.Title>
-      <Slider min={2} max={10} value={stepsCount} onChange={setStepsCount} />
-      <Typography.Title level={5}>Custom gap:</Typography.Title>
-      <Slider
-        step={4}
-        min={0}
-        max={40}
-        value={stepsGap}
-        onChange={setStepsGap}
-      />
-      <Flex wrap gap="middle" style={{ marginTop: 16 }}>
-        <Progress
-          type="dashboard"
-          steps={8}
-          percent={50}
-          trailColor="rgba(0, 0, 0, 0.06)"
-          strokeWidth={20}
-        />
-        <Progress
-          type="circle"
-          percent={100}
-          steps={{ count: stepsCount, gap: stepsGap }}
-          trailColor="rgba(0, 0, 0, 0.06)"
-          strokeWidth={20}
-        />
-      </Flex>
-    </>
+    <div className="grid">
+      <div className="col-12 xl:col-6">
+        <div className="card">
+          <h5>Sales Overview</h5>
+          <Chart type="line" data={lineData} options={lineOptions} />
+        </div>
+      </div>
+    </div>
   );
 };
 
-export default Home;
+export default Dashboard;
