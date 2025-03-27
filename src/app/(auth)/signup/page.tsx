@@ -1,8 +1,8 @@
 "use client";
 import React, { useState } from "react";
-import { Form, Input, Button, notification, Spin, Space } from "antd";
-import "../auth-sass.sass";
+import { Form, Input, Button, notification, Spin, Radio } from "antd";
 import { Col, Row } from "antd";
+import "../auth-sass.sass";
 import {
   EyeInvisibleOutlined,
   EyeOutlined,
@@ -12,37 +12,72 @@ import {
 import { sellit } from "@/assets/images";
 import Image from "next/image";
 import Link from "next/link";
+import axios from "axios";
 
-// Define the interface for form values
 interface SignupFormValues {
-  name: string;
+  firstname: string;
+  lastname: string;
   email: string;
   password: string;
   confirmPassword: string;
-  agree: boolean;
+  role: "owner" | "member";
+  ownerId?: string;
 }
 
 const SignupForm = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [role, setRole] = useState<"owner" | "member">("owner");
 
-  // Handle form submission
-  const onFinish = (values: SignupFormValues) => {
-    setLoading(true); // Show spinner
-    setIsButtonDisabled(true); // Disable the button while loading
-    console.log("Form values:", values);
+  const onFinish = async (values: SignupFormValues) => {
+    setLoading(true);
+    setIsButtonDisabled(true);
 
-    // Simulate a delay for form submission
-    setTimeout(() => {
-      notification.success({
-        message: "Signup Successful!",
-        description: "You have successfully signed up.",
+    try {
+      const payload = {
+        firstName: values.firstname,
+        lastName: values.lastname,
+        email: values.email,
+        password: values.password,
+        role: values.role,
+        ownerId: values.role === "member" ? values.ownerId : undefined, // Only send if member
+      };
+
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/signup",
+        payload
+      );
+
+      if (response.status === 201) {
+        notification.success({
+          message: "Signup Successful!",
+          description: "You have successfully signed up.",
+        });
+        form.resetFields();
+
+        // Redirect based on user role
+        setTimeout(() => {
+          window.location.href =
+            values.role === "owner" ? "/dashboard" : "/member-dashboard";
+        }, 2000);
+      }
+    } catch (error: any) {
+      console.error("Signup error:", error);
+
+      let errorMessage = "Something went wrong!";
+      if (error.response && error.response.data.message) {
+        errorMessage = error.response.data.message;
+      }
+
+      notification.error({
+        message: "Signup Failed",
+        description: errorMessage,
       });
-      setLoading(false); // Hide spinner
-      setIsButtonDisabled(false); // Re-enable the button
-      form.resetFields(); // Reset form fields
-    }, 2000); // Adjust the timeout duration as necessary
+    } finally {
+      setLoading(false);
+      setIsButtonDisabled(false);
+    }
   };
 
   return (
@@ -62,49 +97,48 @@ const SignupForm = () => {
                   form={form}
                   name="signup"
                   onFinish={onFinish}
-                  initialValues={{
-                    remember: true,
-                  }}
                   layout="vertical"
                 >
                   <Form.Item
-                    label="Full Name"
-                    name="name"
-                    className="input"
+                    label="First Name"
+                    name="firstname"
                     rules={[
                       {
                         required: true,
-                        message: "Please input your full name!",
+                        message: "Please input your first name!",
                       },
                     ]}
                   >
-                    <Input
-                      size="large"
-                      placeholder="large size"
-                      suffix={<UserOutlined />}
-                    />
+                    <Input size="large" suffix={<UserOutlined />} />
+                  </Form.Item>
+
+                  <Form.Item
+                    label="Last Name"
+                    name="lastname"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please input your last name!",
+                      },
+                    ]}
+                  >
+                    <Input size="large" suffix={<UserOutlined />} />
                   </Form.Item>
 
                   <Form.Item
                     label="Email"
                     name="email"
-                    className="input"
                     rules={[
                       { required: true, message: "Please input your email!" },
                       { type: "email", message: "Please input a valid email!" },
                     ]}
                   >
-                    <Input
-                      size="large"
-                      placeholder="large size"
-                      suffix={<MailOutlined />}
-                    />
+                    <Input size="large" suffix={<MailOutlined />} />
                   </Form.Item>
 
                   <Form.Item
                     label="Password"
                     name="password"
-                    className="input"
                     rules={[
                       {
                         required: true,
@@ -112,20 +146,17 @@ const SignupForm = () => {
                       },
                     ]}
                   >
-                    <Space direction="vertical">
-                      <Input.Password
-                        placeholder="input password"
-                        iconRender={(visible) =>
-                          visible ? <EyeOutlined /> : <EyeInvisibleOutlined />
-                        }
-                      />
-                    </Space>
+                    <Input.Password
+                      placeholder="input password"
+                      iconRender={(visible) =>
+                        visible ? <EyeOutlined /> : <EyeInvisibleOutlined />
+                      }
+                    />
                   </Form.Item>
 
                   <Form.Item
                     label="Confirm Password"
                     name="confirmPassword"
-                    className="input"
                     dependencies={["password"]}
                     rules={[
                       {
@@ -144,16 +175,46 @@ const SignupForm = () => {
                       }),
                     ]}
                   >
-                    <Space direction="vertical">
-                      <Input.Password
-                        placeholder="input password"
-                        iconRender={(visible) =>
-                          visible ? <EyeOutlined /> : <EyeInvisibleOutlined />
-                        }
-                      />
-                    </Space>
+                    <Input.Password
+                      placeholder="confirm password"
+                      iconRender={(visible) =>
+                        visible ? <EyeOutlined /> : <EyeInvisibleOutlined />
+                      }
+                    />
                   </Form.Item>
 
+                  {/* Role Selection */}
+                  <Form.Item
+                    label="Sign up as"
+                    name="role"
+                    initialValue="owner"
+                  >
+                    <Radio.Group
+                      onChange={(e) => setRole(e.target.value)}
+                      value={role}
+                    >
+                      <Radio value="owner">Owner</Radio>
+                      <Radio value="member">Member</Radio>
+                    </Radio.Group>
+                  </Form.Item>
+
+                  {/* Owner ID (Only if Member is selected) */}
+                  {role === "member" && (
+                    <Form.Item
+                      label="Owner ID"
+                      name="ownerId"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please enter the Owner ID!",
+                        },
+                      ]}
+                    >
+                      <Input placeholder="Enter Owner ID" />
+                    </Form.Item>
+                  )}
+
+                  {/* Submit Button */}
                   <Form.Item>
                     {loading ? (
                       <Button type="primary" block disabled>
@@ -161,7 +222,6 @@ const SignupForm = () => {
                       </Button>
                     ) : (
                       <Button
-                        className="primarybtn"
                         type="primary"
                         htmlType="submit"
                         block
@@ -171,6 +231,7 @@ const SignupForm = () => {
                       </Button>
                     )}
                   </Form.Item>
+
                   <p className="register">
                     Already have an account?{" "}
                     <Link href="./../signin" className="register-nav">

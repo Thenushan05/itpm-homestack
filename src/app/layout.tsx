@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.sass";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { Suspense } from "react";
+import { AuthProvider } from "@/context/authContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="my-app-dark">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
@@ -41,9 +42,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AntdRegistry>
-          <Suspense fallback={<div>Loading ...</div>}>{children}</Suspense>
-        </AntdRegistry>
+        <AuthProvider>
+          <AntdRegistry>
+            <Suspense fallback={<div>Loading ...</div>}>{children}</Suspense>
+          </AntdRegistry>
+        </AuthProvider>
       </body>
     </html>
   );

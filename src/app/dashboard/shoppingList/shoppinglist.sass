@@ -1,0 +1,161 @@
+$bg-gradient: linear-gradient(135deg, #f8f9fa, #e9ecef)
+$button-radius: 8px
+.container
+
+    flex-direction: column
+    align-items: center
+    justify-content: center
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef)
+    text-align: center
+    padding: 20px
+
+    .title
+        font-size: 2.5rem
+        font-weight: bold
+        margin-bottom: 20px
+        color: #343a40
+
+        .buttons
+            display: flex
+            gap: 15px
+            margin-bottom: 20px
+
+        button
+            padding: 12px 18px
+            font-size: 18px
+            border: none
+            border-radius: 8px
+            cursor: pointer
+            transition: 0.3s ease
+
+        .start
+            background: #28a745
+            color: white
+
+        .stop
+            background: #dc3545
+            color: white
+
+        .add
+            background: #007bff
+            color: white
+
+        .reset
+            background: #ffc107
+            color: black
+
+        button:disabled
+            background: #ccc
+            cursor: not-allowed
+
+        .transcript
+            font-size: 20px
+            margin-bottom: 20px
+            color: #495057
+
+        .list-title
+            font-size: 24px
+            font-weight: bold
+            color: #343a40
+            margin-top: 15px
+
+        .shopping-list
+            width: 100%
+            max-width: 500px
+            list-style: none
+            padding: 0
+
+        .empty
+            font-size: 18px
+            color: #6c757d
+
+        .list-item
+            display: flex
+            justify-content: space-between
+            align-items: center
+            background: white
+            padding: 12px
+            margin: 8px 0
+            border-radius: 6px
+            box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1)
+            font-size: 18px
+
+        .delete
+            background: none
+            border: none
+            font-size: 20px
+            cursor: pointer
+
+.container
+    width: 100vw
+    height: 100vh
+    display: flex
+    flex-direction: column
+    align-items: center
+    justify-content: center
+    background: $bg-gradient
+    text-align: center
+    padding: 20px
+
+.title
+    font-size: 2.5rem
+    font-weight: bold
+    margin-bottom: 20px
+    color: #343a40
+
+.buttons
+    display: flex
+    gap: 15px
+    margin-bottom: 20px
+
+button
+    padding: 12px 18px
+    font-size: 18px
+    border: none
+    border-radius: $button-radius
+    cursor: pointer
+    transition: 0.3s ease
+
+.manual-input, .edit-input
+    padding: 10px
+    font-size: 16px
+    border: 2px solid #495057
+    border-radius: 6px
+    margin-bottom: 10px
+
+.transcript
+    font-size: 20px
+    margin-bottom: 20px
+    color: #495057
+
+.list-title
+    font-size: 24px
+    font-weight: bold
+    color: #343a40
+    margin-top: 15px
+
+.shopping-list
+    width: 100%
+    max-width: 500px
+    list-style: none
+
+.empty
+    font-size: 18px
+    color: #6c757d
+
+.list-item
+    display: flex
+    justify-content: space-between
+    align-items: center
+    background: white
+    padding: 12px
+    margin: 8px 0
+    border-radius: 6px
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1)
+    font-size: 18px
+
+.delete
+    background: none
+    border: none
+    font-size: 20px
+    cursor: pointer

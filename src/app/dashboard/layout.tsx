@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import "../dashboard/dashboard.sass";
-import { logo } from "@/assets/images";
 import Image from "next/image";
 import {
   HomeOutlined,
@@ -15,6 +14,8 @@ import {
   BellOutlined,
   UserOutlined,
   LogoutOutlined,
+  SunOutlined,
+  MoonOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -29,12 +30,20 @@ import {
   Modal,
 } from "antd";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { expandlogo, homelogo } from "@/assets/images";
 
 const { Header, Sider, Content, Footer } = Layout;
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [collapsed, setCollapsed] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const router = useRouter();
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
+    router.push("/signin");
+  };
   const [notifications] = useState([
     {
       id: 1,
@@ -59,6 +68,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   ]);
   const [showAllNotifications, setShowAllNotifications] = useState(false);
   const [popoverVisible, setPopoverVisible] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -89,14 +99,12 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         {
           key: "2-1",
           icon: <DollarOutlined />,
-          label: <Link href="/dashboard/finance/overview">Overview</Link>,
+          label: <Link href="/dashboard/finance-overview">Overview</Link>,
         },
         {
           key: "2-2",
           icon: <CreditCardOutlined />,
-          label: (
-            <Link href="/dashboard/finance/transactions">Transactions</Link>
-          ),
+          label: <Link href="/dashboard/finance">Transactions</Link>,
         },
       ],
     },
@@ -113,9 +121,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         {
           key: "3-2",
           icon: <ShoppingCartOutlined />,
-          label: (
-            <Link href="/dashboard/shoppingList/history">Purchase History</Link>
-          ),
+          label: <Link href="/dashboard/shoppingList">Purchase History</Link>,
         },
       ],
     },
@@ -123,13 +129,17 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
   const profileMenu = (
     <Menu
+      onClick={(info) => {
+        if (info.key === "2") {
+          handleLogout();
+        }
+      }}
       items={[
         {
           key: "1",
           icon: <UserOutlined />,
           label: <Link href="./profile">Profile</Link>,
         },
-
         { type: "divider" },
         { key: "2", icon: <LogoutOutlined />, label: "Logout" },
       ]}
@@ -179,8 +189,14 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     </Modal>
   );
 
+  const switchToDarkLightMode = () => {
+    const element = document.querySelector("html") as HTMLHtmlElement;
+    element.classList.toggle("my-app-dark");
+    setIsDarkMode(!isDarkMode);
+  };
+
   return (
-    <Layout className="dashboard-layout">
+    <Layout className="dashboard-layout  primary-bg">
       {isMobile ? (
         <Drawer
           placement="left"
@@ -190,13 +206,10 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           width={250}
           bodyStyle={{ padding: 0 }}
         >
-          <div className="dashboard-logo">
-            <Image src={logo} alt="Logo" width={120} height={50} />
-          </div>
           <Menu
             theme="dark"
             mode="inline"
-            defaultSelectedKeys={["1"]}
+            // defaultSelectedKeys={["1"]}
             items={menuItems}
           />
         </Drawer>
@@ -208,12 +221,19 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           className="dashboard-sider"
         >
           <div className="dashboard-logo">
-            <Image
-              src={logo}
-              alt="Logo"
-              width={collapsed ? 1 : 120}
-              height={collapsed ? 1 : 10}
-            />
+            {collapsed ? (
+              <Image
+                src={homelogo}
+                alt="Logo"
+                className="dashboard-collapsed-logo"
+              />
+            ) : (
+              <Image
+                src={expandlogo}
+                alt="Logo"
+                className="dashboard-expanded-logo"
+              />
+            )}
           </div>
           <Menu
             theme="dark"
@@ -240,6 +260,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           />
           {!isMobile && (
             <div className="header-actions">
+              <Button type="link" onClick={() => switchToDarkLightMode()}>
+                {isDarkMode ? <SunOutlined /> : <MoonOutlined />}
+              </Button>
               <Popover
                 content={notificationContent}
                 title="Notifications"
@@ -254,13 +277,14 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                   <BellOutlined className="notification-icon" />
                 </Badge>
               </Popover>
+
               <Dropdown overlay={profileMenu} trigger={["click"]}>
                 <Avatar className="profile-avatar" icon={<UserOutlined />} />
               </Dropdown>
             </div>
           )}
         </Header>
-        <Content className="dashboard-content">{children}</Content>
+        <Content className="dashboard-content  primary-bg">{children}</Content>
         {isMobile && (
           <Footer className="dashboard-footer">
             <Popover
