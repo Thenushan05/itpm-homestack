@@ -15,6 +15,7 @@ import {
   BellOutlined,
   UserOutlined,
   LogoutOutlined,
+  AppstoreOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -26,14 +27,15 @@ import {
   Avatar,
   Popover,
   List,
-  Modal,
 } from "antd";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const { Header, Sider, Content, Footer } = Layout;
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [collapsed, setCollapsed] = useState(true);
+   const router = useRouter()
   const [isMobile, setIsMobile] = useState(false);
   const [notifications] = useState([
     {
@@ -57,7 +59,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       description: "You have a new order from John Doe.",
     },
   ]);
-  const [showAllNotifications, setShowAllNotifications] = useState(false);
   const [popoverVisible, setPopoverVisible] = useState(false);
 
   useEffect(() => {
@@ -119,6 +120,25 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         },
       ],
     },
+    {
+      key: "4",
+      icon: <AppstoreOutlined />,
+      label: (
+        <Link href="/dashboard/devices">Devices</Link>
+      ),
+   
+      
+    },
+    {
+      key: "5",
+      icon: <ShoppingCartOutlined />,
+      label: (
+        <Link href="/dashboard/groceries">Groceries</Link>
+      ),
+     
+      
+    },
+    
   ];
 
   const profileMenu = (
@@ -149,8 +169,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       <Button
         type="link"
         onClick={() => {
-          setPopoverVisible(false); // Hide the popover when clicking to view all notifications
-          setShowAllNotifications(true);
+          router.push("/dashboard/notifications");
         }}
         style={{ width: "100%", textAlign: "center" }}
       >
@@ -159,25 +178,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     </div>
   );
 
-  const viewAllNotificationsModal = (
-    <Modal
-      visible={showAllNotifications}
-      title="All Notifications"
-      onCancel={() => setShowAllNotifications(false)}
-      footer={null}
-      width="100%"
-      bodyStyle={{ maxHeight: "80vh", overflowY: "auto" }}
-    >
-      <List
-        dataSource={notifications}
-        renderItem={(item) => (
-          <List.Item>
-            <List.Item.Meta title={item.title} description={item.description} />
-          </List.Item>
-        )}
-      />
-    </Modal>
-  );
+  
 
   return (
     <Layout className="dashboard-layout">
@@ -283,7 +284,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           </Footer>
         )}
       </Layout>
-      {viewAllNotificationsModal}
+      
     </Layout>
   );
 };
