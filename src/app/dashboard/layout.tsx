@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import "../dashboard/dashboard.sass";
 import Image from "next/image";
+import { useRouter, usePathname } from "next/navigation";
 import {
   HomeOutlined,
   MenuFoldOutlined,
@@ -30,7 +31,6 @@ import {
   Modal,
 } from "antd";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { expandlogo, homelogo } from "@/assets/images";
 
 const { Header, Sider, Content, Footer } = Layout;
@@ -38,12 +38,18 @@ const { Header, Sider, Content, Footer } = Layout;
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [collapsed, setCollapsed] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [popoverVisible, setPopoverVisible] = useState(false);
+  const [showAllNotifications, setShowAllNotifications] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const pathname = usePathname();
   const router = useRouter();
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     sessionStorage.removeItem("token");
     router.push("/signin");
   };
+
   const [notifications] = useState([
     {
       id: 1,
@@ -66,9 +72,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       description: "You have a new order from John Doe.",
     },
   ]);
-  const [showAllNotifications, setShowAllNotifications] = useState(false);
-  const [popoverVisible, setPopoverVisible] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -87,41 +90,43 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
   const menuItems = [
     {
-      key: "1",
+      key: "/dashboard",
       icon: <HomeOutlined />,
       label: <Link href="/dashboard">Home</Link>,
     },
     {
-      key: "2",
+      key: "finance",
       icon: <VideoCameraOutlined />,
       label: "Finance",
       children: [
         {
-          key: "2-1",
+          key: "/dashboard/finance-overview",
           icon: <DollarOutlined />,
           label: <Link href="/dashboard/finance-overview">Overview</Link>,
         },
         {
-          key: "2-2",
+          key: "/dashboard/finance",
           icon: <CreditCardOutlined />,
           label: <Link href="/dashboard/finance">Transactions</Link>,
         },
       ],
     },
     {
-      key: "3",
+      key: "shopping",
       icon: <ShoppingOutlined />,
       label: "Shopping List",
       children: [
         {
-          key: "3-1",
+          key: "/dashboard/shoppingList",
           icon: <ShoppingCartOutlined />,
           label: <Link href="/dashboard/shoppingList">Current List</Link>,
         },
         {
-          key: "3-2",
+          key: "/dashboard/shoppingList/history",
           icon: <ShoppingCartOutlined />,
-          label: <Link href="/dashboard/shoppingList">Purchase History</Link>,
+          label: (
+            <Link href="/dashboard/shoppingList/history">Purchase History</Link>
+          ),
         },
       ],
     },
@@ -130,15 +135,13 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const profileMenu = (
     <Menu
       onClick={(info) => {
-        if (info.key === "2") {
-          handleLogout();
-        }
+        if (info.key === "2") handleLogout();
       }}
       items={[
         {
           key: "1",
           icon: <UserOutlined />,
-          label: <Link href="./profile">Profile</Link>,
+          label: <Link href="/dashboard/profile">Profile</Link>,
         },
         { type: "divider" },
         { key: "2", icon: <LogoutOutlined />, label: "Logout" },
@@ -149,7 +152,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const notificationContent = (
     <div>
       <List
-        dataSource={notifications.slice(0, 3)} // Show only 3 notifications
+        dataSource={notifications.slice(0, 3)}
         renderItem={(item) => (
           <List.Item>
             <List.Item.Meta title={item.title} description={item.description} />
@@ -159,7 +162,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       <Button
         type="link"
         onClick={() => {
-          setPopoverVisible(false); // Hide the popover when clicking to view all notifications
+          setPopoverVisible(false);
           setShowAllNotifications(true);
         }}
         style={{ width: "100%", textAlign: "center" }}
@@ -171,7 +174,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
   const viewAllNotificationsModal = (
     <Modal
-      visible={showAllNotifications}
+      open={showAllNotifications}
       title="All Notifications"
       onCancel={() => setShowAllNotifications(false)}
       footer={null}
@@ -188,15 +191,26 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       />
     </Modal>
   );
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark") {
+      const element = document.querySelector("html");
+      element?.classList.add("my-app-dark");
+
+      setIsDarkMode(true);
+    }
+  }, []);
 
   const switchToDarkLightMode = () => {
     const element = document.querySelector("html") as HTMLHtmlElement;
-    element.classList.toggle("my-app-dark");
-    setIsDarkMode(!isDarkMode);
+    const newTheme = !isDarkMode;
+    element.classList.toggle("my-app-dark", newTheme);
+    setIsDarkMode(newTheme);
+    localStorage.setItem("theme", newTheme ? "dark" : "light");
   };
 
   return (
-    <Layout className="dashboard-layout  primary-bg">
+    <Layout className="dashboard-layout primary-bg">
       {isMobile ? (
         <Drawer
           placement="left"
@@ -209,7 +223,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           <Menu
             theme="dark"
             mode="inline"
-            // defaultSelectedKeys={["1"]}
+            selectedKeys={[pathname]}
+            defaultOpenKeys={["finance", "shopping"]}
             items={menuItems}
           />
         </Drawer>
@@ -221,25 +236,21 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           className="dashboard-sider"
         >
           <div className="dashboard-logo">
-            {collapsed ? (
-              <Image
-                src={homelogo}
-                alt="Logo"
-                className="dashboard-collapsed-logo"
-              />
-            ) : (
-              <Image
-                src={expandlogo}
-                alt="Logo"
-                className="dashboard-expanded-logo"
-              />
-            )}
+            <Image
+              src={collapsed ? homelogo : expandlogo}
+              alt="Logo"
+              className={
+                collapsed
+                  ? "dashboard-collapsed-logo"
+                  : "dashboard-expanded-logo"
+              }
+            />
           </div>
           <Menu
             theme="dark"
             mode="inline"
-            defaultSelectedKeys={["1"]}
-            defaultOpenKeys={["2", "3"]}
+            selectedKeys={[pathname]}
+            defaultOpenKeys={["finance", "shopping"]}
             items={menuItems}
           />
         </Sider>
@@ -260,15 +271,15 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           />
           {!isMobile && (
             <div className="header-actions">
-              <Button type="link" onClick={() => switchToDarkLightMode()}>
+              <Button type="link" onClick={switchToDarkLightMode}>
                 {isDarkMode ? <SunOutlined /> : <MoonOutlined />}
               </Button>
               <Popover
                 content={notificationContent}
                 title="Notifications"
                 trigger="click"
-                visible={popoverVisible}
-                onVisibleChange={setPopoverVisible}
+                open={popoverVisible}
+                onOpenChange={setPopoverVisible}
               >
                 <Badge
                   count={notifications.length}
@@ -277,22 +288,21 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                   <BellOutlined className="notification-icon" />
                 </Badge>
               </Popover>
-
               <Dropdown overlay={profileMenu} trigger={["click"]}>
                 <Avatar className="profile-avatar" icon={<UserOutlined />} />
               </Dropdown>
             </div>
           )}
         </Header>
-        <Content className="dashboard-content  primary-bg">{children}</Content>
+        <Content className="dashboard-content primary-bg">{children}</Content>
         {isMobile && (
           <Footer className="dashboard-footer">
             <Popover
               content={notificationContent}
               title="Notifications"
               trigger="click"
-              visible={popoverVisible}
-              onVisibleChange={setPopoverVisible}
+              open={popoverVisible}
+              onOpenChange={setPopoverVisible}
             >
               <Badge
                 count={notifications.length}
