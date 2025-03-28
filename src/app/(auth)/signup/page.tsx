@@ -24,7 +24,7 @@ interface SignupFormValues {
   ownerId?: string;
 }
 
-const SignupForm = () => {
+const SignupForm: React.FC = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
@@ -41,13 +41,15 @@ const SignupForm = () => {
         email: values.email,
         password: values.password,
         role: values.role,
-        ownerId: values.role === "member" ? values.ownerId : undefined, // Only send if member
+        ownerId: values.role === "member" ? values.ownerId : undefined,
       };
 
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/signup",
-        payload
-      );
+      const endpoint =
+        values.role === "owner"
+          ? "http://localhost:5000/api/auth/signup-owner"
+          : "http://localhost:5000/api/auth/signup-family-member";
+
+      const response = await axios.post(endpoint, payload);
 
       if (response.status === 201) {
         notification.success({
@@ -56,17 +58,19 @@ const SignupForm = () => {
         });
         form.resetFields();
 
-        // Redirect based on user role
         setTimeout(() => {
-          window.location.href =
-            values.role === "owner" ? "/dashboard" : "/member-dashboard";
+          window.location.href = "/dashboard";
         }, 2000);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Signup error:", error);
 
       let errorMessage = "Something went wrong!";
-      if (error.response && error.response.data.message) {
+      if (
+        axios.isAxiosError(error) &&
+        error.response &&
+        error.response.data.message
+      ) {
         errorMessage = error.response.data.message;
       }
 
@@ -147,7 +151,6 @@ const SignupForm = () => {
                     ]}
                   >
                     <Input.Password
-                      placeholder="input password"
                       iconRender={(visible) =>
                         visible ? <EyeOutlined /> : <EyeInvisibleOutlined />
                       }
@@ -159,31 +162,24 @@ const SignupForm = () => {
                     name="confirmPassword"
                     dependencies={["password"]}
                     rules={[
-                      {
-                        required: true,
-                        message: "Please confirm your password!",
-                      },
                       ({ getFieldValue }) => ({
                         validator(_, value) {
-                          if (!value || getFieldValue("password") === value) {
-                            return Promise.resolve();
-                          }
-                          return Promise.reject(
-                            new Error("Passwords do not match!")
-                          );
+                          return !value || getFieldValue("password") === value
+                            ? Promise.resolve()
+                            : Promise.reject(
+                                new Error("Passwords do not match!")
+                              );
                         },
                       }),
                     ]}
                   >
                     <Input.Password
-                      placeholder="confirm password"
                       iconRender={(visible) =>
                         visible ? <EyeOutlined /> : <EyeInvisibleOutlined />
                       }
                     />
                   </Form.Item>
 
-                  {/* Role Selection */}
                   <Form.Item
                     label="Sign up as"
                     name="role"
@@ -198,7 +194,6 @@ const SignupForm = () => {
                     </Radio.Group>
                   </Form.Item>
 
-                  {/* Owner ID (Only if Member is selected) */}
                   {role === "member" && (
                     <Form.Item
                       label="Owner ID"
@@ -214,7 +209,6 @@ const SignupForm = () => {
                     </Form.Item>
                   )}
 
-                  {/* Submit Button */}
                   <Form.Item>
                     {loading ? (
                       <Button type="primary" block disabled>

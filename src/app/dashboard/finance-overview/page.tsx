@@ -12,6 +12,7 @@ import {
   Legend,
 } from "recharts";
 import "../finance-overview/finance-overview.sass";
+import "../../../sass/custom/index.sass";
 
 const data = [
   { month: "Jan", expense: 400 },
@@ -32,10 +33,10 @@ const databar = [
 
 function FinanceOverview() {
   return (
-    <div className="finance-overview-main">
-      <div className="cart-container">
-        <div className="budject-cart">
-          <div className="cart-head">
+    <div className="finance-overview-main primary-bg">
+      <div className="cart-container ">
+        <div className="budject-cart  primary-bg primary-border">
+          <div className="cart-head primary-txt">
             <span>Monthly Budget</span>
           </div>
           <div className="progress-bar">
@@ -43,14 +44,14 @@ function FinanceOverview() {
               type="dashboard"
               steps={8}
               percent={50}
-              trailColor="rgba(0, 0, 0, 0.06)"
+              trailColor="rgba(222, 209, 209, 0.92)"
               strokeWidth={20}
             />
           </div>
         </div>
 
-        <div className="budject-cart">
-          <div className="cart-head">
+        <div className="budject-cart  primary-bg primary-border">
+          <div className="cart-head primary-txt">
             <span>Monthly Expenses</span>
           </div>
           <div className="progress-bar">
@@ -58,14 +59,14 @@ function FinanceOverview() {
               type="dashboard"
               steps={8}
               percent={65}
-              trailColor="rgba(0, 0, 0, 0.06)"
+              trailColor="rgba(222, 209, 209, 0.92)"
               strokeWidth={20}
             />
           </div>
         </div>
 
-        <div className="budject-cart">
-          <div className="cart-head">
+        <div className="budject-cart  primary-bg primary-border">
+          <div className="cart-head primary-txt">
             <span>Remaining Budget</span>
           </div>
           <div className="progress-bar">
@@ -73,14 +74,14 @@ function FinanceOverview() {
               type="dashboard"
               steps={8}
               percent={30}
-              trailColor="rgba(0, 0, 0, 0.06)"
+              trailColor="rgba(222, 209, 209, 0.92)"
               strokeWidth={20}
             />
           </div>
         </div>
 
-        <div className="budject-cart">
-          <div className="cart-head">
+        <div className="budject-cart  primary-bg primary-border">
+          <div className="cart-head primary-txt">
             <span>Savings</span>
           </div>
           <div className="progress-bar">
@@ -88,14 +89,14 @@ function FinanceOverview() {
               type="dashboard"
               steps={8}
               percent={80}
-              trailColor="rgba(0, 0, 0, 0.06)"
+              trailColor="rgba(222, 209, 209, 0.92)"
               strokeWidth={20}
             />
           </div>
         </div>
       </div>
       <div className="graphs-container">
-        <div className="bar-chart-container">
+        <div className="bar-chart-container  primary-bg primary-border primary-txt">
           <h3>Monthly Expense Overview</h3>
           <ResponsiveContainer width="100%" height={400}>
             <BarChart
@@ -110,12 +111,16 @@ function FinanceOverview() {
             </BarChart>
           </ResponsiveContainer>
         </div>
-        <div className="horizontal-progress-container">
+        <div className="horizontal-progress-container  primary-bg primary-border">
           {databar.map((item) => (
             <div key={item.category} className="horizontal-progress">
               <div className="catogory">
-                <span className="category-label">{item.category}</span>
-                <span className="percent-label">{item.expense}%</span>
+                <span className="category-label primary-txt">
+                  {item.category}
+                </span>
+                <span className="percent-label primary-txt">
+                  {item.expense}%
+                </span>
               </div>
 
               <Progress
