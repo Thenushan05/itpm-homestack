@@ -17,6 +17,7 @@ import {
   LogoutOutlined,
   SunOutlined,
   MoonOutlined,
+  AppstoreOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -130,6 +131,16 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         },
       ],
     },
+    {
+      key: "4",
+      icon: <AppstoreOutlined />,
+      label: <Link href="/dashboard/devices">Devices</Link>,
+    },
+    {
+      key: "5",
+      icon: <ShoppingCartOutlined />,
+      label: <Link href="/dashboard/groceries">Groceries</Link>,
+    },
   ];
 
   const profileMenu = (
@@ -162,8 +173,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       <Button
         type="link"
         onClick={() => {
-          setPopoverVisible(false);
-          setShowAllNotifications(true);
+          router.push("/dashboard/notifications");
         }}
         style={{ width: "100%", textAlign: "center" }}
       >
@@ -317,7 +327,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           </Footer>
         )}
       </Layout>
-      {viewAllNotificationsModal}
     </Layout>
   );
 };
