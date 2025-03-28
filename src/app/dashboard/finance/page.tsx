@@ -2,7 +2,7 @@
 import React from "react";
 import ImageToText from "@/components/ImageToText";
 
-const ShoppingList: React.FC = () => {
+const finance: React.FC = () => {
   return (
     <main className="flex justify-center items-center min-h-screen">
       <ImageToText />
@@ -10,4 +10,4 @@ const ShoppingList: React.FC = () => {
   );
 };
 
-export default ShoppingList;
+export default finance;
