@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "regenerator-runtime/runtime";
@@ -11,6 +10,8 @@ import { PlusCircleFilled } from "@ant-design/icons";
 import { FaMicrophone, FaRegStopCircle } from "react-icons/fa";
 import { HiRefresh } from "react-icons/hi";
 import { Empty, Modal, Input, Button } from "antd";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const App: React.FC = () => {
   const [items, setItems] = useState<
@@ -34,6 +35,8 @@ const App: React.FC = () => {
   const [micStatus, setMicStatus] = useState("mic");
   const [error, setError] = useState<string>("");
   const userId = "USER_ID_HERE"; // Replace with dynamic user ID retrieval
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     fetchItems();
@@ -107,7 +110,7 @@ const App: React.FC = () => {
       );
 
       if (response.data) {
-        setItems([...items, response.data]);
+        setItems([...items, response.data.purchase]);
         setManualInput("");
         setManualCount("1");
         setManualPrice("");
@@ -184,16 +187,144 @@ const App: React.FC = () => {
     setEditPrice("");
   };
 
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = items.slice(indexOfFirstItem, indexOfLastItem);
+
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
+  const printPDF = () => {
+    const doc = new jsPDF();
+    const headers = ["Item", "Count", "Price", "Purchase Date"];
+
+    const startX = 14;
+    let startY = 30;
+    const rowHeight = 10;
+    const columnWidths = [50, 30, 40, 50];
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.setFillColor(240, 240, 240);
+    doc.rect(startX, startY, columnWidths[0], rowHeight, "F");
+    doc.rect(startX + columnWidths[0], startY, columnWidths[1], rowHeight, "F");
+    doc.rect(
+      startX + columnWidths[0] + columnWidths[1],
+      startY,
+      columnWidths[2],
+      rowHeight,
+      "F"
+    );
+    doc.rect(
+      startX + columnWidths[0] + columnWidths[1] + columnWidths[2],
+      startY,
+      columnWidths[3],
+      rowHeight,
+      "F"
+    );
+    doc.text(headers[0], startX + 5, startY + 7);
+    doc.text(headers[1], startX + columnWidths[0] + 5, startY + 7);
+    doc.text(
+      headers[2],
+      startX + columnWidths[0] + columnWidths[1] + 5,
+      startY + 7
+    );
+    doc.text(
+      headers[3],
+      startX + columnWidths[0] + columnWidths[1] + columnWidths[2] + 5,
+      startY + 7
+    );
+
+    startY += rowHeight;
+    const rowsPerPage = 10;
+    let currentPage = 1;
+    let currentItemIndex = 0;
+
+    const drawRows = () => {
+      while (
+        currentItemIndex < items.length &&
+        startY < doc.internal.pageSize.height - 30
+      ) {
+        const item = items[currentItemIndex];
+        const rowData = [
+          item.itemName,
+          String(item.count),
+          item.price ? `$${item.price.toFixed(2)}` : "-",
+          new Date(item.purchaseDate).toLocaleDateString(),
+        ];
+
+        const isEvenRow = currentItemIndex % 2 === 0;
+        doc.setFillColor(isEvenRow ? 255 : 245, 245, 245);
+        doc.rect(startX, startY, columnWidths[0], rowHeight, "F");
+        doc.rect(
+          startX + columnWidths[0],
+          startY,
+          columnWidths[1],
+          rowHeight,
+          "F"
+        );
+        doc.rect(
+          startX + columnWidths[0] + columnWidths[1],
+          startY,
+          columnWidths[2],
+          rowHeight,
+          "F"
+        );
+        doc.rect(
+          startX + columnWidths[0] + columnWidths[1] + columnWidths[2],
+          startY,
+          columnWidths[3],
+          rowHeight,
+          "F"
+        );
+
+        doc.setTextColor(0, 0, 0);
+        doc.text(rowData[0], startX + 5, startY + 7);
+        doc.text(rowData[1], startX + columnWidths[0] + 5, startY + 7);
+        doc.text(
+          rowData[2],
+          startX + columnWidths[0] + columnWidths[1] + 5,
+          startY + 7
+        );
+        doc.text(
+          rowData[3],
+          startX + columnWidths[0] + columnWidths[1] + columnWidths[2] + 5,
+          startY + 7
+        );
+
+        startY += rowHeight;
+        currentItemIndex++;
+
+        if (startY > doc.internal.pageSize.height - 30) {
+          doc.addPage();
+          currentPage++;
+          startY = 20;
+          drawRows();
+          break;
+        }
+      }
+    };
+
+    drawRows();
+
+    const totalPages = doc.internal.pages.length;
+
+    const currentDate = new Date();
+    const dateString = `${currentDate.toLocaleString("default", {
+      month: "long",
+    })}_${currentDate.getDate()}_${currentDate.getFullYear()}`;
+
+    doc.save(`shopping_list_${dateString}.pdf`);
+  };
+
   return (
-    <div className="container">
-      <h1 className="title">🛒 Shopping List</h1>
+    <div className="container primary-bg primary-border">
+      <h1 className="title primary-txt">🛒 Shopping List</h1>
       {error && <p className="error-message">{error}</p>}
       <div className="input-container">
         <input
           type="text"
           value={manualInput || transcript}
           onChange={(e) => setManualInput(e.target.value)}
-          placeholder="Type or speak add an item..."
+          placeholder="Type or speak to add an item..."
           className="manual-input"
         />
         <button className="mic-button" onClick={toggleListening}>
@@ -224,6 +355,11 @@ const App: React.FC = () => {
       />
       <button onClick={addToList} className="manual-add">
         <PlusCircleFilled /> Add to List
+      </button>
+
+      {/* Print PDF Button */}
+      <button onClick={printPDF} className="print-pdf-button">
+        Print PDF
       </button>
 
       {/* Edit Modal */}
@@ -261,25 +397,25 @@ const App: React.FC = () => {
         />
       </Modal>
 
-      <table className="shopping-table">
-        <thead>
+      <table className="shopping-table primary-bg">
+        <thead className="primary-bg">
           <tr>
-            <th>Item</th>
-            <th>Count</th>
-            <th>Price</th>
-            <th>Purchase Date</th>
-            <th>Action</th>
+            <th className="primary-bg">Item</th>
+            <th className="primary-bg">Count</th>
+            <th className="primary-bg">Price</th>
+            <th className="primary-bg">Purchase Date</th>
+            <th className="primary-bg">Action</th>
           </tr>
         </thead>
         <tbody>
-          {items.length === 0 ? (
+          {currentItems.length === 0 ? (
             <tr>
               <td colSpan={5} className="empty">
                 <Empty /> Your list is empty.
               </td>
             </tr>
           ) : (
-            items.map((item) => (
+            currentItems.map((item) => (
               <tr key={item._id}>
                 <td>{item.itemName}</td>
                 <td>{item.count}</td>
@@ -301,6 +437,24 @@ const App: React.FC = () => {
           )}
         </tbody>
       </table>
+
+      {/* Pagination */}
+      {items.length > itemsPerPage && (
+        <div className="pagination">
+          {Array.from(
+            { length: Math.ceil(items.length / itemsPerPage) },
+            (_, index) => (
+              <button
+                key={index}
+                onClick={() => paginate(index + 1)}
+                className={currentPage === index + 1 ? "active" : ""}
+              >
+                {index + 1}
+              </button>
+            )
+          )}
+        </div>
+      )}
     </div>
   );
 };
