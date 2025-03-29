@@ -172,6 +172,101 @@
     height: 60px
 .header-actions .profile-avatar
     background: $secondarycolor
-.grid
-    height: 350px
-    width: 600px
+
+.dashboard-container-home
+    display: flex
+    justify-content: space-between
+    flex-direction: row
+    .grid
+        height: 350px
+        width: 600px
+    // Parent container for the card with target
+.card-container
+    border-radius: 1rem
+    border: 1px solid #e5e7eb
+    background-color: #f3f4f6 // Light Gray
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1)
+
+    &.dark
+        background-color: #1f2937
+        border-color: #2d3748
+
+.header
+    padding: 1.25rem 1.25rem 2.75rem
+    background-color: #ffffff
+    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1)
+    border-radius: 1rem
+
+    .title
+        font-size: 1.125rem
+        font-weight: 600
+        color: #4b5563 // Gray-800
+
+    .subtitle
+        margin-top: 0.25rem
+        font-size: 0.875rem
+        color: #6b7280 // Gray-500
+
+.chart-container
+    position: relative
+    max-height: 330px
+    padding: 1rem
+
+    .percentage
+        position: absolute
+        left: 50%
+        top: 100%
+        transform: translateX(-50%) translateY(-95%)
+        background-color: #e0f9eb
+        padding: 0.25rem 0.5rem
+        font-size: 0.75rem
+        color: #10b981 // Success Green
+        border-radius: 9999px
+
+.description
+    margin-top: 2.5rem
+    text-align: center
+    font-size: 0.875rem
+    color: #6b7280 // Gray-500
+
+    .sm-text
+        font-size: 1rem
+
+.target-revenue-section
+    display: flex
+    justify-content: center
+    align-items: center
+    gap: 1.25rem
+    padding: 0.875rem 1.5rem
+
+    .target-revenue-box
+        text-align: center
+
+    .label
+        margin-bottom: 0.25rem
+        font-size: 0.75rem
+        color: #6b7280 // Gray-500
+
+        &.sm-text
+            font-size: 1rem
+
+    .value
+        display: flex
+        justify-content: center
+        align-items: center
+        gap: 0.25rem
+        font-size: 1.125rem
+        font-weight: 600
+        color: #4b5563 // Gray-800
+
+        svg
+            width: 1rem
+            height: 1rem
+
+    .divider
+        width: 1px
+        background-color: #e5e7eb
+        height: 1.75rem
+
+        &.dark
+            background-color: #374151
