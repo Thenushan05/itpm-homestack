@@ -83,7 +83,7 @@ th, td
     border-bottom: 1px solid #ddd
 
 th
-    background: #007bff
+    background: $secondarycolor
     color: white
 
 .edit, .delete, .save
@@ -99,8 +99,9 @@ th
         background: #e0a800
 
 .delete
-    background: #dc3545
+    border: 1px solid #dc3545
     color: white
+    background: #fff
     &:hover
         background: #b02a37
 
@@ -162,3 +163,14 @@ input
 .empty
     text-align: center
     color: #666
+.clear-all-button
+    background-color: red
+    color: white
+    padding: 8px 16px
+    border: none
+    border-radius: 5px
+    cursor: pointer
+    font-weight: bold
+
+    &:hover
+        background-color: darkred

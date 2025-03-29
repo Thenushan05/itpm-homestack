@@ -316,8 +316,8 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="container">
-      <h1 className="title">🛒 Shopping List</h1>
+    <div className="container primary-bg primary-border">
+      <h1 className="title primary-txt">🛒 Shopping List</h1>
       {error && <p className="error-message">{error}</p>}
       <div className="input-container">
         <input
@@ -397,14 +397,14 @@ const App: React.FC = () => {
         />
       </Modal>
 
-      <table className="shopping-table">
-        <thead>
+      <table className="shopping-table primary-bg">
+        <thead className="primary-bg">
           <tr>
-            <th>Item</th>
-            <th>Count</th>
-            <th>Price</th>
-            <th>Purchase Date</th>
-            <th>Action</th>
+            <th className="primary-bg">Item</th>
+            <th className="primary-bg">Count</th>
+            <th className="primary-bg">Price</th>
+            <th className="primary-bg">Purchase Date</th>
+            <th className="primary-bg">Action</th>
           </tr>
         </thead>
         <tbody>
