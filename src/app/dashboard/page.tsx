@@ -1,284 +1,187 @@
-"use client";
+import React from "react";
+import { Button } from "../../components/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../../components/card";
+import {
+  BarChart,
+  LineChart,
+  PieChart,
+  TrendingUp,
+  Users,
+  DollarSign,
+  Activity,
+} from "lucide-react";
+const percentageChange = -3.2;
 
-import { Chart } from "primereact/chart";
-import React, { useState } from "react";
-import "../dashboard/dashboard.sass";
-import { ChartData, ChartOptions } from "chart.js";
-import { ApexOptions } from "apexcharts";
-
-import dynamic from "next/dynamic";
-
-// Dynamically import the ReactApexChart component
-const ReactApexChart = dynamic(() => import("react-apexcharts"), {
-  ssr: false,
-});
-
-const lineData: ChartData = {
-  labels: ["January", "February", "March", "April", "May", "June", "July"],
-  datasets: [
-    {
-      label: "First Dataset",
-      data: [65, 59, 80, 81, 56, 55, 40],
-      fill: false,
-      backgroundColor: "#2f4860",
-      borderColor: "#2f4860",
-      tension: 0.4,
-    },
-    {
-      label: "Second Dataset",
-      data: [28, 48, 40, 19, 86, 27, 90],
-      fill: false,
-      backgroundColor: "#00bb7e",
-      borderColor: "#00bb7e",
-      tension: 0.4,
-    },
-  ],
-};
-
-const Dashboard = () => {
-  const [lineOptions, setLineOptions] = useState<ChartOptions>({});
-
-  const applyLightTheme = () => {
-    const lineOptions: ChartOptions = {
-      plugins: {
-        legend: {
-          labels: {
-            color: "#495057",
-          },
-        },
-      },
-      scales: {
-        x: {
-          ticks: {
-            color: "#495057",
-          },
-          grid: {
-            color: "#ebedef",
-          },
-        },
-        y: {
-          ticks: {
-            color: "#495057",
-          },
-          grid: {
-            color: "#ebedef",
-          },
-        },
-      },
-    };
-
-    setLineOptions(lineOptions);
-  };
-
-  const applyDarkTheme = () => {
-    const lineOptions = {
-      plugins: {
-        legend: {
-          labels: {
-            color: "#ebedef",
-          },
-        },
-      },
-      scales: {
-        x: {
-          ticks: {
-            color: "#ebedef",
-          },
-          grid: {
-            color: "rgba(160, 167, 181, .3)",
-          },
-        },
-        y: {
-          ticks: {
-            color: "#ebedef",
-          },
-          grid: {
-            color: "rgba(160, 167, 181, .3)",
-          },
-        },
-      },
-    };
-
-    setLineOptions(lineOptions);
-  };
-  const series = [75.55];
-  const options: ApexOptions = {
-    colors: ["#465FFF"],
-    chart: {
-      fontFamily: "Outfit, sans-serif",
-      type: "radialBar",
-      height: 330,
-      sparkline: {
-        enabled: true,
-      },
-    },
-    plotOptions: {
-      radialBar: {
-        startAngle: -85,
-        endAngle: 85,
-        hollow: {
-          size: "80%",
-        },
-        track: {
-          background: "#E4E7EC",
-          strokeWidth: "100%",
-          margin: 5, // margin is in pixels
-        },
-        dataLabels: {
-          name: {
-            show: false,
-          },
-          value: {
-            fontSize: "36px",
-            fontWeight: "600",
-            offsetY: -40,
-            color: "#1D2939",
-            formatter: function (val) {
-              return val + "%";
-            },
-          },
-        },
-      },
-    },
-    fill: {
-      type: "solid",
-      colors: ["#465FFF"],
-    },
-    stroke: {
-      lineCap: "round",
-    },
-    labels: ["Progress"],
-  };
-
-  const [isOpen, setIsOpen] = useState(false);
-
-  function toggleDropdown() {
-    setIsOpen(!isOpen);
-  }
-
-  function closeDropdown() {
-    setIsOpen(false);
-  }
-
+const Index = () => {
   return (
-    <div className="dashboard-container-home">
-      {" "}
-      <div className="grid">
-        <div className="col-12 xl:col-6">
-          <div className="card">
-            <h5>Sales Overview</h5>
-            <Chart type="line" data={lineData} options={lineOptions} />
-          </div>
+    <div className="min-h-screen bg-gray-100 p-6 primary-bg">
+      {/* Dashboard Content */}
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+          <Button>New Report</Button>
         </div>
-        <div className="rounded-2xl border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-white/[0.03]">
-          <div className="px-5 pt-5 bg-white shadow-default rounded-2xl pb-11 dark:bg-gray-900 sm:px-6 sm:pt-6">
-            <div className="flex justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-                  Monthly Target
-                </h3>
-                <p className="mt-1 font-normal text-gray-500 text-theme-sm dark:text-gray-400">
-                  Target you’ve set for each month
-                </p>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">
+                    Total Revenue
+                  </p>
+                  <h3 className="text-2xl font-bold mt-1">$45,231.89</h3>
+                  <p className="text-sm text-green-500 flex items-center mt-1">
+                    <TrendingUp className="w-4 h-4 mr-1" />
+                    +20.1% from last month
+                  </p>
+                </div>
+                <div className="bg-blue-100 p-3 rounded-full">
+                  <DollarSign className="h-6 w-6 text-blue-500" />
+                </div>
               </div>
-            </div>
-            <div className="relative">
-              <div className="max-h-[330px]">
-                <ReactApexChart
-                  options={options}
-                  series={series}
-                  type="radialBar"
-                  height={330}
-                />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">
+                    New Customers
+                  </p>
+                  <h3 className="text-2xl font-bold mt-1">2,420</h3>
+                  <p className="text-sm text-green-500 flex items-center mt-1">
+                    <TrendingUp className="w-4 h-4 mr-1" />
+                    +12.5% from last week
+                  </p>
+                </div>
+                <div className="bg-indigo-100 p-3 rounded-full ">
+                  <Users className="h-6 w-6 text-indigo-500" />
+                </div>
               </div>
-              <span className="absolute left-1/2 top-full -translate-x-1/2 -translate-y-[95%] rounded-full bg-success-50 px-3 py-1 text-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
-                +10%
-              </span>
-            </div>
-            <p className="mx-auto mt-10 w-full max-w-[380px] text-center text-sm text-gray-500 sm:text-base">
-              You earn $3287 today, it&apos;s higher than last month. Keep up
-              your good work!
-            </p>
-          </div>
+            </CardContent>
+          </Card>
 
-          <div className="flex items-center justify-center gap-5 px-6 py-3.5 sm:gap-8 sm:py-5">
-            <div className="target-revenue-box">
-              <p className="mb-1 text-center text-gray-500 text-theme-xs dark:text-gray-400 sm:text-sm">
-                Target
-              </p>
-              <p className="flex items-center justify-center gap-1 text-base font-semibold text-gray-800 dark:text-white/90 sm:text-lg">
-                $20K
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
+          <Card>
+            <CardContent className="p-6 ">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">
+                    Active Users
+                  </p>
+                  <h3 className="text-2xl font-bold mt-1">16,325</h3>
+
+                  <p
+                    className={`text-sm flex items-center mt-1 ${
+                      percentageChange > 0 ? "text-green-500" : "text-red-500"
+                    }`}
+                  >
+                    <TrendingUp className="w-4 h-4 mr-1" />
+                    {percentageChange}% from yesterday
+                  </p>
+                </div>
+                <div
+                  className={`p-3 rounded-full ${
+                    percentageChange > 0 ? "bg-green-100" : "bg-red-100"
+                  }`}
                 >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M7.26816 13.6632..."
-                    fill="#D92D20"
+                  <Activity
+                    className={`h-6 w-6 ${
+                      percentageChange > 0 ? "bg-green-100" : "bg-red-100"
+                    }`}
                   />
-                </svg>
-              </p>
-            </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-            <div className="divider"></div>
-
-            <div className="target-revenue-box">
-              <p className="mb-1 text-center text-gray-500 text-theme-xs dark:text-gray-400 sm:text-sm">
-                Revenue
-              </p>
-              <p className="flex items-center justify-center gap-1 text-base font-semibold text-gray-800 dark:text-white/90 sm:text-lg">
-                $20K
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M7.60141 2.33683..."
-                    fill="#039855"
-                  />
-                </svg>
-              </p>
-            </div>
-
-            <div className="divider"></div>
-
-            <div className="target-revenue-box">
-              <p className="mb-1 text-center text-gray-500 text-theme-xs dark:text-gray-400 sm:text-sm">
-                Today
-              </p>
-              <p className="flex items-center justify-center gap-1 text-base font-semibold text-gray-800 dark:text-white/90 sm:text-lg">
-                $20K
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M7.60141 2.33683..."
-                    fill="#039855"
-                  />
-                </svg>
-              </p>
-            </div>
-          </div>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">
+                    Conversion Rate
+                  </p>
+                  <h3 className="text-2xl font-bold mt-1">4.6%</h3>
+                  <p className="text-sm text-green-500 flex items-center mt-1">
+                    <TrendingUp className="w-4 h-4 mr-1" />
+                    +2.3% from last week
+                  </p>
+                </div>
+                <div className="bg-purple-100 p-3 rounded-full">
+                  <PieChart className="h-6 w-6 text-purple-500" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
+
+        {/* Charts & Tables */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <Card className="col-span-1">
+            <CardHeader>
+              <CardTitle>Revenue Overview</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="h-80 flex items-center justify-center bg-gray-50 rounded-md">
+                <LineChart className="h-8 w-8 text-gray-400" />
+                <span className="ml-2 text-gray-500">Revenue Chart</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="col-span-1">
+            <CardHeader>
+              <CardTitle>Sales by Category</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="h-80 flex items-center justify-center bg-gray-50 rounded-md">
+                <BarChart className="h-8 w-8 text-gray-400" />
+                <span className="ml-2 text-gray-500">Sales Chart</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Recent Activity */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Recent Activity</CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              {[1, 2, 3, 4, 5].map((item) => (
+                <div
+                  key={item}
+                  className="flex items-center gap-4 p-3 bg-gray-50 rounded-md"
+                >
+                  <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                    <Users className="h-5 w-5 text-gray-500" />
+                  </div>
+                  <div>
+                    <p className="font-medium">New user signed up</p>
+                    <p className="text-sm text-gray-500">
+                      User #{item}23 completed registration
+                    </p>
+                  </div>
+                  <div className="ml-auto text-sm text-gray-500">
+                    {item} hour{item !== 1 ? "s" : ""} ago
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
 };
 
-export default Dashboard;
+export default Index;
