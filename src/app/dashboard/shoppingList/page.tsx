@@ -37,6 +37,7 @@ const App: React.FC = () => {
   const userId = "USER_ID_HERE"; // Replace with dynamic user ID retrieval
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [isModalVisible, setIsModalVisible] = useState(false); // New state for modal visibility
 
   useEffect(() => {
     fetchItems();
@@ -315,6 +316,19 @@ const App: React.FC = () => {
     doc.save(`shopping_list_${dateString}.pdf`);
   };
 
+  const showModal = () => {
+    setIsModalVisible(true); // Show the modal
+  };
+
+  const handleOk = () => {
+    printPDF();
+    setIsModalVisible(false); // Close the modal after downloading the PDF
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false); // Close the modal if cancel is clicked
+  };
+
   return (
     <div className="container primary-bg primary-border">
       <h1 className="title primary-txt">🛒 Shopping List</h1>
@@ -358,9 +372,21 @@ const App: React.FC = () => {
       </button>
 
       {/* Print PDF Button */}
-      <button onClick={printPDF} className="print-pdf-button">
+      <button onClick={showModal} className="print-pdf-button">
         Print PDF
       </button>
+
+      {/* Modal for PDF download confirmation */}
+      <Modal
+        title="Download PDF"
+        visible={isModalVisible}
+        onOk={handleOk}
+        onCancel={handleCancel}
+        okText="Download"
+        cancelText="Cancel"
+      >
+        <p>Are you sure you want to download the shopping list as a PDF?</p>
+      </Modal>
 
       {/* Edit Modal */}
       <Modal
