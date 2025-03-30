@@ -13,7 +13,7 @@ import { Empty, Modal, Input, Button } from "antd";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
-const PurchaseList = ({ homeName }: { homeName: string }) => {
+const App: React.FC = () => {
   const [items, setItems] = useState<
     {
       _id: string;
@@ -23,9 +23,9 @@ const PurchaseList = ({ homeName }: { homeName: string }) => {
       price?: number;
       purchaseDate: string;
       fullName: string;
+      homeName: string;
     }[]
   >([]);
-
   const { transcript, resetTranscript } = useSpeechRecognition();
   const [manualInput, setManualInput] = useState("");
   const [manualCount, setManualCount] = useState<string>("1");
@@ -40,11 +40,27 @@ const PurchaseList = ({ homeName }: { homeName: string }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [isModalVisible, setIsModalVisible] = useState(false); // New state for modal visibility
-
+  const [home, setHome] = useState("");
   const fetchItems = async () => {
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Token not found.");
+        return;
+      }
+
+      const decodedToken = JSON.parse(atob(token.split(".")[1]));
+      const userId = decodedToken.id;
+
+      const response1 = await axios.get(
+        `http://localhost:5000/api/user/${userId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setHome(response1.data.homeName || "");
       const response = await axios.get(
-        `http://localhost:5000/api/purchases/home/${homeName}`
+        `http://localhost:5000/api/purchases/home/${response1.data.homeName}`,
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (!response.data.purchases) {
@@ -59,7 +75,7 @@ const PurchaseList = ({ homeName }: { homeName: string }) => {
 
   useEffect(() => {
     fetchItems();
-  }, [homeName]);
+  }, [home]);
 
   const toggleListening = () => {
     if (micStatus === "mic") {
@@ -484,4 +500,4 @@ const PurchaseList = ({ homeName }: { homeName: string }) => {
   );
 };
 
-export default PurchaseList;
+export default App;
