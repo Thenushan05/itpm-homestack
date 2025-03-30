@@ -1,0 +1,176 @@
+@import '../../../sass/custom/index'
+$mobile: 480px
+$tablet: 768px
+
+.container
+    max-width: 800px
+    margin: auto
+    padding: 20px
+    font-family: Arial, sans-serif
+    background: #f8f9fa
+    border-radius: 10px
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1)
+
+    @media (max-width: $tablet)
+        padding: 15px
+
+.title
+    text-align: center
+    margin-bottom: 20px
+    font-size: 24px
+    color: #333
+
+    @media (max-width: $mobile)
+        font-size: 20px
+
+.input-container
+    display: flex
+    align-items: center
+    gap: 10px
+    margin-bottom: 10px
+
+.manual-input
+    flex: 1
+    padding: 10px
+    border: 1px solid #ccc
+    border-radius: 5px
+
+.mic-button
+    background: none
+    border: none
+    font-size: 20px
+    padding: 6px
+    cursor: pointer
+    background: $secondarycolor
+
+    &:hover
+        background: $primary-color
+
+    @media (max-width: $mobile)
+        flex-direction: column
+        gap: 5px
+
+.count-input
+    width: 100%
+    padding: 10px
+    margin-bottom: 10px
+    border: 1px solid #ccc
+    border-radius: 5px
+    text-align: center
+
+.manual-add
+    width: 100%
+    padding: 10px
+    background: $secondarycolor
+    color: white
+    border: none
+    border-radius: 5px
+    cursor: pointer
+    font-size: 16px
+
+    &:hover
+        background: $primary-color
+
+// Table Styling
+.shopping-table
+    width: 100%
+    border-collapse: collapse
+    margin-top: 20px
+
+th, td
+    padding: 12px
+    text-align: center
+    border-bottom: 1px solid #ddd
+
+th
+    background: $secondarycolor
+    color: white
+
+.edit, .delete, .save
+    border: none
+    padding: 5px 10px
+    margin: 2px
+    cursor: pointer
+    border-radius: 5px
+
+.edit
+    background: #ffc107
+    &:hover
+        background: #e0a800
+
+.delete
+    border: 1px solid #dc3545
+    color: white
+    background: #fff
+    &:hover
+        background: #b02a37
+
+.save
+    background: #28a745
+    color: white
+    &:hover
+        background: #218838
+
+.edit-input, .edit-count-input
+    width: 80%
+    padding: 5px
+    text-align: center
+    border: 1px solid #ccc
+    border-radius: 5px
+
+    @media (max-width: $tablet)
+        th, td
+            padding: 8px
+
+    @media (max-width: $mobile)
+        display: block
+        overflow-x: auto
+        white-space: nowrap
+
+        th, td
+            padding: 6px
+            font-size: 14px
+
+// Adjust controls for mobile screens
+.count-controls
+    display: flex
+    justify-content: center
+    align-items: center
+    gap: 5px
+
+button
+    background: #007bff
+    color: white
+    border: none
+    padding: 5px
+    cursor: pointer
+    border-radius: 5px
+
+    &:hover
+        background: #0056b3
+
+input
+    width: 50px
+    text-align: center
+    border: 1px solid #ccc
+    border-radius: 5px
+    padding: 5px
+
+    @media (max-width: $mobile)
+        flex-direction: column
+        gap: 5px
+
+.empty
+    text-align: center
+    color: #666
+.clear-all-button
+    background-color: red
+    color: white
+    padding: 8px 16px
+    border: none
+    border-radius: 5px
+    cursor: pointer
+    font-weight: bold
+
+    &:hover
+        background-color: darkred
