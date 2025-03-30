@@ -22,6 +22,8 @@ const App: React.FC = () => {
       count: number;
       price?: number;
       purchaseDate: string;
+      fullName: string;
+      homeName: string;
     }[]
   >([]);
   const { transcript, resetTranscript } = useSpeechRecognition();
@@ -34,33 +36,51 @@ const App: React.FC = () => {
   const [editPrice, setEditPrice] = useState<string>("");
   const [micStatus, setMicStatus] = useState("mic");
   const [error, setError] = useState<string>("");
-  const userId = "USER_ID_HERE"; // Replace with dynamic user ID retrieval
+  // const userId = "USER_ID_HERE"; // Replace with dynamic user ID retrieval
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [isModalVisible, setIsModalVisible] = useState(false); // New state for modal visibility
-
-  useEffect(() => {
-    fetchItems();
-  }, []);
+  const [home, setHome] = useState("");
+  const [userId, setUserId] = useState<string | null>(null);
 
   const fetchItems = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/purchases", {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Token not found.");
+        return;
+      }
+
+      const decodedToken = JSON.parse(atob(token.split(".")[1]));
+      const userIdFromToken = decodedToken.id; // Extract userId from token
+      console.log("User ID from token:", userIdFromToken); // Debug log
+
+      const response1 = await axios.get(
+        `http://localhost:5000/api/user/${userIdFromToken}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setHome(response1.data.homeName || "");
+      setUserId(userIdFromToken); // Set state for userId
+
+      const response = await axios.get(
+        `http://localhost:5000/api/purchases/home/${response1.data.homeName}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
       if (!response.data.purchases) {
         setItems([]);
+      } else {
+        setItems(response.data.purchases);
       }
-
-      setItems(response.data.purchases);
     } catch (err) {
       setError("Failed to fetch items.");
     }
   };
+
+  useEffect(() => {
+    fetchItems();
+  }, [home]);
 
   const toggleListening = () => {
     if (micStatus === "mic") {
@@ -196,7 +216,7 @@ const App: React.FC = () => {
 
   const printPDF = () => {
     const doc = new jsPDF();
-    const headers = ["Item", "Count", "Price", "Purchase Date"];
+    const headers = ["Item", "Count", "fullName", "Purchase Date"];
 
     const startX = 14;
     let startY = 30;
@@ -248,7 +268,7 @@ const App: React.FC = () => {
         const rowData = [
           item.itemName,
           String(item.count),
-          item.price ? `$${item.price.toFixed(2)}` : "-",
+          item.fullName,
           new Date(item.purchaseDate).toLocaleDateString(),
         ];
 
@@ -428,7 +448,7 @@ const App: React.FC = () => {
           <tr>
             <th className="primary-bg">Item</th>
             <th className="primary-bg">Count</th>
-            <th className="primary-bg">Price</th>
+            <th className="primary-bg">User</th>
             <th className="primary-bg">Purchase Date</th>
             <th className="primary-bg">Action</th>
           </tr>
@@ -445,18 +465,25 @@ const App: React.FC = () => {
               <tr key={item._id}>
                 <td>{item.itemName}</td>
                 <td>{item.count}</td>
-                <td>{item.price ? `$${item.price.toFixed(2)}` : "-"}</td>
+                <td>{item.fullName}</td>
                 <td>{new Date(item.purchaseDate).toLocaleDateString()}</td>
                 <td>
-                  <button
-                    className="delete"
-                    onClick={() => deleteItem(item._id)}
-                  >
-                    ❌
-                  </button>
-                  <button className="edit" onClick={() => startEditing(item)}>
-                    Edit
-                  </button>
+                  {item.userId === userId && (
+                    <>
+                      <button
+                        className="delete"
+                        onClick={() => deleteItem(item._id)}
+                      >
+                        ❌
+                      </button>
+                      <button
+                        className="edit"
+                        onClick={() => startEditing(item)}
+                      >
+                        Edit
+                      </button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))
