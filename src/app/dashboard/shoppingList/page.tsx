@@ -13,7 +13,7 @@ import { Empty, Modal, Input, Button } from "antd";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
-const App: React.FC = () => {
+const PurchaseList = ({ homeName }: { homeName: string }) => {
   const [items, setItems] = useState<
     {
       _id: string;
@@ -25,6 +25,7 @@ const App: React.FC = () => {
       fullName: string;
     }[]
   >([]);
+
   const { transcript, resetTranscript } = useSpeechRecognition();
   const [manualInput, setManualInput] = useState("");
   const [manualCount, setManualCount] = useState<string>("1");
@@ -40,28 +41,25 @@ const App: React.FC = () => {
   const itemsPerPage = 10;
   const [isModalVisible, setIsModalVisible] = useState(false); // New state for modal visibility
 
-  useEffect(() => {
-    fetchItems();
-  }, []);
-
   const fetchItems = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/purchases", {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const response = await axios.get(
+        `http://localhost:5000/api/purchases/home/${homeName}`
+      );
 
       if (!response.data.purchases) {
         setItems([]);
+      } else {
+        setItems(response.data.purchases);
       }
-
-      setItems(response.data.purchases);
     } catch (err) {
       setError("Failed to fetch items.");
     }
   };
+
+  useEffect(() => {
+    fetchItems();
+  }, [homeName]);
 
   const toggleListening = () => {
     if (micStatus === "mic") {
@@ -486,4 +484,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+export default PurchaseList;
