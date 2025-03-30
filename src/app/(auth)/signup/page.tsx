@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { Form, Input, Button, notification, Spin, Radio } from "antd";
+import { Form, Input, Button, notification, Spin, Switch } from "antd";
 import { Col, Row } from "antd";
 import "../auth-sass.sass";
 import {
@@ -21,14 +21,14 @@ interface SignupFormValues {
   password: string;
   confirmPassword: string;
   role: "owner" | "member";
-  ownerId?: string;
+  homeName: string;
 }
 
 const SignupForm: React.FC = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
-  const [role, setRole] = useState<"owner" | "member">("owner");
+  const [role, setRole] = useState<"owner" | "member">("owner"); // Default set to "owner"
 
   const onFinish = async (values: SignupFormValues) => {
     setLoading(true);
@@ -41,7 +41,10 @@ const SignupForm: React.FC = () => {
         email: values.email,
         password: values.password,
         role: values.role,
-        ownerId: values.role === "member" ? values.ownerId : undefined,
+        homeName:
+          values.role === "member" || values.role === "owner"
+            ? values.homeName
+            : undefined,
       };
 
       const endpoint =
@@ -58,9 +61,9 @@ const SignupForm: React.FC = () => {
         });
         form.resetFields();
 
-        setTimeout(() => {
-          window.location.href = "/dashboard";
-        }, 2000);
+        // setTimeout(() => {
+        //   window.location.href = "/dashboard";
+        // }, 2000);
       }
     } catch (error: unknown) {
       console.error("Signup error:", error);
@@ -97,12 +100,31 @@ const SignupForm: React.FC = () => {
             <div className="signup-inner-form-container">
               <div className="signup-form-inner">
                 <h2 className="title">Sign Up</h2>
+
+                {/* Role toggle at the top */}
                 <Form
                   form={form}
                   name="signup"
                   onFinish={onFinish}
                   layout="vertical"
                 >
+                  <Form.Item
+                    label="Select Role"
+                    name="role"
+                    initialValue="owner"
+                  >
+                    <Switch
+                      checked={role === "member"}
+                      onChange={(checked) => {
+                        const newRole = checked ? "member" : "owner";
+                        setRole(newRole);
+                        form.setFieldsValue({ role: newRole }); // Sync role with form state
+                      }}
+                      checkedChildren="Member"
+                      unCheckedChildren="Owner"
+                    />
+                  </Form.Item>
+
                   <Form.Item
                     label="First Name"
                     name="firstname"
@@ -180,32 +202,31 @@ const SignupForm: React.FC = () => {
                     />
                   </Form.Item>
 
-                  <Form.Item
-                    label="Sign up as"
-                    name="role"
-                    initialValue="owner"
-                  >
-                    <Radio.Group
-                      onChange={(e) => setRole(e.target.value)}
-                      value={role}
+                  {/* Show Home ID input only if role is "owner" or "member" */}
+                  {role === "owner" && (
+                    <Form.Item
+                      label="Home ID (for Members)"
+                      name="homeName"
+                      rules={[
+                        { required: true, message: "Please enter a Home ID!" },
+                      ]}
                     >
-                      <Radio value="owner">Owner</Radio>
-                      <Radio value="member">Member</Radio>
-                    </Radio.Group>
-                  </Form.Item>
+                      <Input placeholder="Enter Home ID for Members" />
+                    </Form.Item>
+                  )}
 
                   {role === "member" && (
                     <Form.Item
-                      label="Owner ID"
-                      name="ownerId"
+                      label="Home ID"
+                      name="homeName"
                       rules={[
                         {
                           required: true,
-                          message: "Please enter the Owner ID!",
+                          message: "Please enter the Home ID!",
                         },
                       ]}
                     >
-                      <Input placeholder="Enter Owner ID" />
+                      <Input placeholder="Enter Home ID" />
                     </Form.Item>
                   )}
 
