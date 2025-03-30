@@ -22,6 +22,7 @@ const App: React.FC = () => {
       count: number;
       price?: number;
       purchaseDate: string;
+      fullName: string;
     }[]
   >([]);
   const { transcript, resetTranscript } = useSpeechRecognition();
@@ -428,7 +429,7 @@ const App: React.FC = () => {
           <tr>
             <th className="primary-bg">Item</th>
             <th className="primary-bg">Count</th>
-            <th className="primary-bg">Price</th>
+            <th className="primary-bg">User</th>
             <th className="primary-bg">Purchase Date</th>
             <th className="primary-bg">Action</th>
           </tr>
@@ -445,7 +446,7 @@ const App: React.FC = () => {
               <tr key={item._id}>
                 <td>{item.itemName}</td>
                 <td>{item.count}</td>
-                <td>{item.price ? `$${item.price.toFixed(2)}` : "-"}</td>
+                <td>{item.fullName}</td>
                 <td>{new Date(item.purchaseDate).toLocaleDateString()}</td>
                 <td>
                   <button

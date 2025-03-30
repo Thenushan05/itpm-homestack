@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { Form, Input, Button, notification, Spin, Switch } from "antd";
+import { Form, Input, Button, notification, Spin, Switch, Modal } from "antd";
 import { Col, Row } from "antd";
 import "../auth-sass.sass";
 import {
@@ -29,6 +29,7 @@ const SignupForm: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [role, setRole] = useState<"owner" | "member">("owner"); // Default set to "owner"
+  const [isModalVisible, setIsModalVisible] = useState(false); // State for controlling the modal visibility
 
   const onFinish = async (values: SignupFormValues) => {
     setLoading(true);
@@ -55,15 +56,21 @@ const SignupForm: React.FC = () => {
       const response = await axios.post(endpoint, payload);
 
       if (response.status === 201) {
-        notification.success({
-          message: "Signup Successful!",
-          description: "You have successfully signed up.",
-        });
-        form.resetFields();
+        if (values.role === "owner") {
+          // Navigate to dashboard if the user is an owner
+          notification.success({
+            message: "Signup Successful!",
+            description: "You have successfully signed up as an owner.",
+          });
+          setTimeout(() => {
+            window.location.href = "/dashboard";
+          }, 2000);
+        } else {
+          // Show modal if the user is a member
+          setIsModalVisible(true);
+        }
 
-        // setTimeout(() => {
-        //   window.location.href = "/dashboard";
-        // }, 2000);
+        form.resetFields();
       }
     } catch (error: unknown) {
       console.error("Signup error:", error);
@@ -85,6 +92,16 @@ const SignupForm: React.FC = () => {
       setLoading(false);
       setIsButtonDisabled(false);
     }
+  };
+
+  const handleOk = () => {
+    // Close the modal and redirect to the login page
+    setIsModalVisible(false);
+    window.location.href = "/signin";
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false); // Just close the modal if cancel is clicked
   };
 
   return (
@@ -259,6 +276,24 @@ const SignupForm: React.FC = () => {
           </Col>
         </Row>
       </div>
+
+      {/* Modal for Member SignUp */}
+      <Modal
+        title="Member Created!"
+        visible={isModalVisible}
+        onOk={handleOk}
+        onCancel={handleCancel}
+        footer={[
+          <Button key="back" onClick={handleCancel}>
+            Cancel
+          </Button>,
+          <Button key="submit" type="primary" onClick={handleOk}>
+            Back to Login
+          </Button>,
+        ]}
+      >
+        <p>You have successfully signed up as a member.</p>
+      </Modal>
     </div>
   );
 };
