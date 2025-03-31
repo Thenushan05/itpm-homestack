@@ -15,7 +15,7 @@ import {
   DollarSign,
   Activity,
 } from "lucide-react";
-const percentageChange = -3.2;
+const percentageChange = 3.2;
 
 const Index = () => {
   return (
