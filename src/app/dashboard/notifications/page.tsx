@@ -23,6 +23,7 @@ interface Notification {
   type: "approval" | "join_request";
   userId: string;
   memberId: string;
+  status?: "pending" | "approved";
 }
 
 export default function NotificationsPage() {
@@ -44,8 +45,6 @@ export default function NotificationsPage() {
           `http://localhost:5000/api/notifications/${userId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-
-        console.log("Fetched Notifications:", response.data.notifications);
 
         setNotifications(response.data.notifications || []);
       } catch (error) {
@@ -73,10 +72,9 @@ export default function NotificationsPage() {
 
       notification.success("Member approved successfully");
 
-      // Update UI: Change button to "Approved" and disable it
       setNotifications((prevNotifications) =>
         prevNotifications.map((n) =>
-          n.memberId === memberId ? { ...n, type: "approval" } : n
+          n.memberId === memberId ? { ...n, status: "approved" } : n
         )
       );
     } catch (error) {
@@ -85,7 +83,7 @@ export default function NotificationsPage() {
     }
   };
 
-  const handleDismiss = async (notificationId: string) => {
+  const handleDismiss = async (memberId: string) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -94,15 +92,14 @@ export default function NotificationsPage() {
       }
 
       await axios.delete(
-        `http://localhost:5000/api/dismiss-notification/${notificationId}`,
+        `http://localhost:5000/api/auth/reject-member/${memberId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       notification.info("Notification dismissed");
 
-      // Update UI: Remove the notification from state
       setNotifications((prevNotifications) =>
-        prevNotifications.filter((n) => n._id !== notificationId)
+        prevNotifications.filter((n) => n._id !== memberId)
       );
     } catch (error) {
       console.error("Error dismissing notification:", error);
@@ -153,7 +150,6 @@ export default function NotificationsPage() {
                   />
 
                   <div style={{ flex: 1 }}>
-                    {/* Display the message in the UI */}
                     <Title level={5} style={{ marginBottom: 4 }}>
                       {notification.message}
                     </Title>
@@ -165,21 +161,19 @@ export default function NotificationsPage() {
                         alignItems: "center",
                       }}
                     >
-                      {notification.type === "join_request" ? (
+                      {notification.type === "join_request" &&
+                      notification.status !== "approved" ? (
                         <Space>
                           <Button
                             type="primary"
                             icon={<CheckOutlined />}
                             onClick={() => handleAccept(notification.memberId)}
-                            disabled={notification.type === "approval"}
                           >
-                            {notification.type === "approval"
-                              ? "Approved"
-                              : "Accept"}
+                            Accept
                           </Button>
                           <Button
                             icon={<CloseOutlined />}
-                            onClick={() => handleDismiss(notification._id)}
+                            onClick={() => handleDismiss(notification.memberId)}
                           >
                             Dismiss
                           </Button>

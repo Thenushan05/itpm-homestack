@@ -182,25 +182,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     </div>
   );
 
-  const viewAllNotificationsModal = (
-    <Modal
-      open={showAllNotifications}
-      title="All Notifications"
-      onCancel={() => setShowAllNotifications(false)}
-      footer={null}
-      width="100%"
-      bodyStyle={{ maxHeight: "80vh", overflowY: "auto" }}
-    >
-      <List
-        dataSource={notifications}
-        renderItem={(item) => (
-          <List.Item>
-            <List.Item.Meta title={item.title} description={item.description} />
-          </List.Item>
-        )}
-      />
-    </Modal>
-  );
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme === "dark") {

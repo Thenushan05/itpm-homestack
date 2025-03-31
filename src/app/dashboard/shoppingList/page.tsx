@@ -22,6 +22,8 @@ const App: React.FC = () => {
       count: number;
       price?: number;
       purchaseDate: string;
+      fullName: string;
+      homeName: string;
     }[]
   >([]);
   const { transcript, resetTranscript } = useSpeechRecognition();
@@ -38,29 +40,42 @@ const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [isModalVisible, setIsModalVisible] = useState(false); // New state for modal visibility
-
-  useEffect(() => {
-    fetchItems();
-  }, []);
-
+  const [home, setHome] = useState("");
   const fetchItems = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/purchases", {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Token not found.");
+        return;
+      }
+
+      const decodedToken = JSON.parse(atob(token.split(".")[1]));
+      const userId = decodedToken.id;
+
+      const response1 = await axios.get(
+        `http://localhost:5000/api/user/${userId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setHome(response1.data.homeName || "");
+      const response = await axios.get(
+        `http://localhost:5000/api/purchases/home/${response1.data.homeName}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
       if (!response.data.purchases) {
         setItems([]);
+      } else {
+        setItems(response.data.purchases);
       }
-
-      setItems(response.data.purchases);
     } catch (err) {
       setError("Failed to fetch items.");
     }
   };
+
+  useEffect(() => {
+    fetchItems();
+  }, [home]);
 
   const toggleListening = () => {
     if (micStatus === "mic") {
@@ -428,7 +443,7 @@ const App: React.FC = () => {
           <tr>
             <th className="primary-bg">Item</th>
             <th className="primary-bg">Count</th>
-            <th className="primary-bg">Price</th>
+            <th className="primary-bg">User</th>
             <th className="primary-bg">Purchase Date</th>
             <th className="primary-bg">Action</th>
           </tr>
@@ -445,7 +460,7 @@ const App: React.FC = () => {
               <tr key={item._id}>
                 <td>{item.itemName}</td>
                 <td>{item.count}</td>
-                <td>{item.price ? `$${item.price.toFixed(2)}` : "-"}</td>
+                <td>{item.fullName}</td>
                 <td>{new Date(item.purchaseDate).toLocaleDateString()}</td>
                 <td>
                   <button
