@@ -7,40 +7,56 @@ import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
 import { PlusCircleFilled } from "@ant-design/icons";
-import { FaMicrophone, FaRegStopCircle } from "react-icons/fa";
+import { FaEdit, FaMicrophone, FaRegStopCircle, FaTrash } from "react-icons/fa";
 import { HiRefresh } from "react-icons/hi";
-import { Empty, Modal, Input, Button } from "antd";
+import { Empty, Modal, Input, Button, Select, Pagination } from "antd";
 import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
+import { AiOutlineStop } from "react-icons/ai";
+import { MdInventory, MdOutlineProductionQuantityLimits } from "react-icons/md";
 
+interface Additem {
+  itemName: string;
+  count: string;
+  price?: number;
+  purchaseDate: string;
+  fullName?: string;
+  homeName?: string;
+  category: string;
+}
 const App: React.FC = () => {
   const [items, setItems] = useState<
     {
       _id: string;
       userId: string;
       itemName: string;
-      count: number;
+      count: string;
       price?: number;
       purchaseDate: string;
       fullName: string;
       homeName: string;
+      category: string;
     }[]
   >([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const { transcript, resetTranscript } = useSpeechRecognition();
   const [manualInput, setManualInput] = useState("");
   const [manualCount, setManualCount] = useState<string>("1");
   const [manualPrice, setManualPrice] = useState<string>("");
+  const [manualCategory, setManualCategory] = useState<string>("");
   const [editingIndex, setEditingIndex] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
   const [editCount, setEditCount] = useState<string>("");
   const [editPrice, setEditPrice] = useState<string>("");
   const [micStatus, setMicStatus] = useState("mic");
   const [error, setError] = useState<string>("");
-  const userId = "USER_ID_HERE"; // Replace with dynamic user ID retrieval
-  const [currentPage, setCurrentPage] = useState(1);
+  // const userId = "USER_ID_HERE"; // Replace with dynamic user ID retrieval
   const itemsPerPage = 10;
   const [isModalVisible, setIsModalVisible] = useState(false); // New state for modal visibility
   const [home, setHome] = useState("");
+  const [userId, setUserId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
   const fetchItems = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -50,23 +66,31 @@ const App: React.FC = () => {
       }
 
       const decodedToken = JSON.parse(atob(token.split(".")[1]));
-      const userId = decodedToken.id;
+      const userIdFromToken = decodedToken.id; // Extract userId from token
+      console.log("User ID from token:", userIdFromToken); // Debug log
 
       const response1 = await axios.get(
-        `http://localhost:5000/api/user/${userId}`,
+        `http://localhost:5000/api/user/${userIdFromToken}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       setHome(response1.data.homeName || "");
+      setUserId(userIdFromToken); // Set state for userId
+
       const response = await axios.get(
         `http://localhost:5000/api/purchases/home/${response1.data.homeName}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { currentPage: currentPage, pageSize: itemsPerPage },
+        }
       );
 
       if (!response.data.purchases) {
         setItems([]);
       } else {
         setItems(response.data.purchases);
+
+        setTotalItems(response.data.totalItems);
       }
     } catch (err) {
       setError("Failed to fetch items.");
@@ -75,7 +99,40 @@ const App: React.FC = () => {
 
   useEffect(() => {
     fetchItems();
-  }, [home]);
+  }, [home, currentPage]);
+
+  const deleteAllPurchases = async () => {
+    try {
+      if (!home) {
+        setError("Home name not found.");
+        return;
+      }
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Token not found.");
+        return;
+      }
+
+      const response = await axios.delete(
+        `http://localhost:5000/api/purchases/home/${home}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.data) {
+        setItems([]); // Clear the shopping list
+        setTotalItems(0);
+        setError("");
+        alert("All purchases deleted successfully.");
+      }
+    } catch (err) {
+      setError("Failed to delete purchases.");
+    }
+  };
 
   const toggleListening = () => {
     if (micStatus === "mic") {
@@ -107,11 +164,12 @@ const App: React.FC = () => {
       return;
     }
 
-    const newItem = {
+    const newItem: Additem = {
       itemName: itemToAdd,
-      count: parseInt(manualCount, 10),
+      count: manualCount,
       price: manualPrice ? parseFloat(manualPrice) : undefined,
       purchaseDate: new Date().toISOString(),
+      category: manualCategory,
     };
     try {
       const response = await axios.post(
@@ -203,15 +261,9 @@ const App: React.FC = () => {
     setEditPrice("");
   };
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = items.slice(indexOfFirstItem, indexOfLastItem);
-
-  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
-
   const printPDF = () => {
     const doc = new jsPDF();
-    const headers = ["Item", "Count", "Price", "Purchase Date"];
+    const headers = ["Item", "Count", "fullName", "Purchase Date"];
 
     const startX = 14;
     let startY = 30;
@@ -263,7 +315,7 @@ const App: React.FC = () => {
         const rowData = [
           item.itemName,
           String(item.count),
-          item.price ? `$${item.price.toFixed(2)}` : "-",
+          item.fullName,
           new Date(item.purchaseDate).toLocaleDateString(),
         ];
 
@@ -344,52 +396,67 @@ const App: React.FC = () => {
     setIsModalVisible(false); // Close the modal if cancel is clicked
   };
 
+  const currentItems = items.filter((item) =>
+    item.itemName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
+  const { Option } = Select;
+
   return (
     <div className="container primary-bg primary-border">
       <h1 className="title primary-txt">🛒 Shopping List</h1>
       {error && <p className="error-message">{error}</p>}
-      <div className="input-container">
-        <input
-          type="text"
-          value={manualInput || transcript}
-          onChange={(e) => setManualInput(e.target.value)}
-          placeholder="Type or speak to add an item..."
-          className="manual-input"
-        />
-        <button className="mic-button" onClick={toggleListening}>
-          {micStatus === "mic" ? (
-            <FaMicrophone className="mic-icon" />
-          ) : micStatus === "stop" ? (
-            <FaRegStopCircle />
-          ) : (
-            <HiRefresh />
-          )}
+      <div className="add-item-container-main">
+        <div className="input-container">
+          <input
+            type="text"
+            value={manualInput || transcript}
+            onChange={(e) => setManualInput(e.target.value)}
+            placeholder="Type or speak to add an item..."
+            className="manual-input"
+          />
+          <button className="mic-button" onClick={toggleListening}>
+            {micStatus === "mic" ? (
+              <FaMicrophone className="mic-icon" />
+            ) : micStatus === "stop" ? (
+              <FaRegStopCircle />
+            ) : (
+              <HiRefresh />
+            )}
+          </button>
+        </div>
+        <div className="count-category-container">
+          <input
+            type="string"
+            min="1"
+            value={manualCount}
+            onChange={(e) => setManualCount(e.target.value)}
+            className="count-input"
+            placeholder="Count"
+          />
+          <div className="category-select-container">
+            <Select
+              className="category-select"
+              defaultValue="Select Category"
+              style={{ width: 200 }}
+              onChange={(e) => setManualCategory(e)}
+            >
+              <Option value="entertainment">entertainment</Option>
+              <Option value="clothing">clothing</Option>
+              <Option value="other">other</Option>
+            </Select>
+          </div>
+        </div>
+        <button onClick={addToList} className="manual-add">
+          <PlusCircleFilled /> Add to List
         </button>
       </div>
-      <input
-        type="number"
-        min="1"
-        value={manualCount}
-        onChange={(e) => setManualCount(e.target.value)}
-        className="count-input"
-        placeholder="Count"
-      />
-      <input
-        type="number"
-        min="0"
-        value={manualPrice}
-        onChange={(e) => setManualPrice(e.target.value)}
-        className="price-input"
-        placeholder="Price (Optional)"
-      />
-      <button onClick={addToList} className="manual-add">
-        <PlusCircleFilled /> Add to List
-      </button>
-
       {/* Print PDF Button */}
-      <button onClick={showModal} className="print-pdf-button">
-        Print PDF
-      </button>
 
       {/* Modal for PDF download confirmation */}
       <Modal
@@ -437,65 +504,86 @@ const App: React.FC = () => {
           placeholder="Price (Optional)"
         />
       </Modal>
-
-      <table className="shopping-table primary-bg">
-        <thead className="primary-bg">
-          <tr>
-            <th className="primary-bg">Item</th>
-            <th className="primary-bg">Count</th>
-            <th className="primary-bg">User</th>
-            <th className="primary-bg">Purchase Date</th>
-            <th className="primary-bg">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {currentItems.length === 0 ? (
-            <tr>
-              <td colSpan={5} className="empty">
-                <Empty /> Your list is empty.
-              </td>
-            </tr>
-          ) : (
-            currentItems.map((item) => (
-              <tr key={item._id}>
-                <td>{item.itemName}</td>
-                <td>{item.count}</td>
-                <td>{item.fullName}</td>
-                <td>{new Date(item.purchaseDate).toLocaleDateString()}</td>
-                <td>
-                  <button
-                    className="delete"
-                    onClick={() => deleteItem(item._id)}
+      {error && <p className="error-message">{error}</p>}
+      <div className="search-print-container">
+        <Input
+          type="text"
+          placeholder="Search items..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="search-bar"
+        />
+        <button onClick={showModal} className="print-pdf-button">
+          Print PDF
+        </button>
+      </div>
+      <div className="list-container">
+        {currentItems.length === 0 ? (
+          <>
+            <Empty /> Your list is empty.
+          </>
+        ) : (
+          currentItems.map((item) => (
+            <div className="list-container-sub">
+              <div className="item-inner">
+                <div className="item-name-category">
+                  <div
+                    className={
+                      "category " + "bg-" + item.category.toLowerCase()
+                    }
                   >
-                    ❌
-                  </button>
-                  <button className="edit" onClick={() => startEditing(item)}>
-                    Edit
-                  </button>
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+                    {" "}
+                    {item.category}
+                  </div>
+                  <div className="item-name">
+                    <MdInventory className="item-icon" /> {item.itemName}
+                    <div className="count">{item.count}</div>
+                  </div>
+                </div>
+                <div className="item-name-user">
+                  <div className="name"> {item.fullName}</div>
+                  <div className="date">
+                    {new Date(item.purchaseDate).toLocaleDateString()}
+                  </div>
+                </div>
+              </div>
+
+              <div className="buttons-container">
+                {item.userId === userId ? (
+                  <>
+                    <button
+                      className="deletebtn"
+                      onClick={() => deleteItem(item._id)}
+                    >
+                      <FaTrash />
+                    </button>
+                    <button
+                      className="editbtn"
+                      onClick={() => startEditing(item)}
+                    >
+                      <FaEdit />
+                    </button>
+                  </>
+                ) : (
+                  <Button className="disabled" disabled>
+                    <AiOutlineStop />
+                  </Button>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+      <button onClick={deleteAllPurchases} className="delete-all-button">
+        <FaTrash /> Delete All Purchases
+      </button>
 
       {/* Pagination */}
-      {items.length > itemsPerPage && (
-        <div className="pagination">
-          {Array.from(
-            { length: Math.ceil(items.length / itemsPerPage) },
-            (_, index) => (
-              <button
-                key={index}
-                onClick={() => paginate(index + 1)}
-                className={currentPage === index + 1 ? "active" : ""}
-              >
-                {index + 1}
-              </button>
-            )
-          )}
-        </div>
-      )}
+      <Pagination
+        current={currentPage}
+        onChange={(page) => setCurrentPage(page)}
+        total={totalItems}
+      />
     </div>
   );
 };
