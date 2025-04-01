@@ -141,6 +141,11 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       icon: <ShoppingCartOutlined />,
       label: <Link href="/dashboard/groceries">Groceries</Link>,
     },
+    {
+      key: "6",
+      icon: <ShoppingCartOutlined />,
+      label: <Link href="/dashboard/wastage">Wastage</Link>,
+    },
   ];
 
   const profileMenu = (

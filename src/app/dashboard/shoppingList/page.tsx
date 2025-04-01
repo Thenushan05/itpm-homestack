@@ -13,6 +13,7 @@ import { Empty, Modal, Input, Button, Select, Pagination } from "antd";
 import { jsPDF } from "jspdf";
 import { AiOutlineStop } from "react-icons/ai";
 import { MdInventory, MdOutlineProductionQuantityLimits } from "react-icons/md";
+import { IoMdPrint } from "react-icons/io";
 
 interface Additem {
   itemName: string;
@@ -411,50 +412,126 @@ const App: React.FC = () => {
     <div className="container primary-bg primary-border">
       <h1 className="title primary-txt">🛒 Shopping List</h1>
       {error && <p className="error-message">{error}</p>}
-      <div className="add-item-container-main">
-        <div className="input-container">
-          <input
-            type="text"
-            value={manualInput || transcript}
-            onChange={(e) => setManualInput(e.target.value)}
-            placeholder="Type or speak to add an item..."
-            className="manual-input"
-          />
-          <button className="mic-button" onClick={toggleListening}>
-            {micStatus === "mic" ? (
-              <FaMicrophone className="mic-icon" />
-            ) : micStatus === "stop" ? (
-              <FaRegStopCircle />
-            ) : (
-              <HiRefresh />
-            )}
+      <div className="group-container">
+        <div className="add-item-container-main">
+          <div className="input-container">
+            <input
+              type="text"
+              value={manualInput || transcript}
+              onChange={(e) => setManualInput(e.target.value)}
+              placeholder="Type or speak to add an item..."
+              className="manual-input"
+            />
+            <button className="mic-button" onClick={toggleListening}>
+              {micStatus === "mic" ? (
+                <FaMicrophone className="mic-icon" />
+              ) : micStatus === "stop" ? (
+                <FaRegStopCircle />
+              ) : (
+                <HiRefresh />
+              )}
+            </button>
+          </div>
+          <div className="count-category-container">
+            <input
+              type="string"
+              min="1"
+              value={manualCount}
+              onChange={(e) => setManualCount(e.target.value)}
+              className="count-input"
+              placeholder="Count"
+            />
+            <div className="category-select-container">
+              <Select
+                className="category-select"
+                defaultValue="Select Category"
+                style={{ width: 200 }}
+                onChange={(e) => setManualCategory(e)}
+              >
+                <Option value="entertainment">entertainment</Option>
+                <Option value="clothing">clothing</Option>
+                <Option value="other">other</Option>
+              </Select>
+            </div>
+          </div>
+          <button onClick={addToList} className="manual-add">
+            <PlusCircleFilled /> Add to List
           </button>
         </div>
-        <div className="count-category-container">
-          <input
-            type="string"
-            min="1"
-            value={manualCount}
-            onChange={(e) => setManualCount(e.target.value)}
-            className="count-input"
-            placeholder="Count"
-          />
-          <div className="category-select-container">
-            <Select
-              className="category-select"
-              defaultValue="Select Category"
-              style={{ width: 200 }}
-              onChange={(e) => setManualCategory(e)}
-            >
-              <Option value="entertainment">entertainment</Option>
-              <Option value="clothing">clothing</Option>
-              <Option value="other">other</Option>
-            </Select>
+
+        <div className="list-container">
+          <div className="search-print-container">
+            <button onClick={deleteAllPurchases} className="delete-all-button">
+              <FaTrash /> Delete All
+            </button>
+
+            <button onClick={showModal} className="print-pdf-button">
+              <IoMdPrint /> Print PDF
+            </button>
           </div>
+          <Input
+            type="text"
+            placeholder="Search items..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="search-bar"
+          />
+          {currentItems.length === 0 ? (
+            <>
+              <Empty /> Your list is empty.
+            </>
+          ) : (
+            currentItems.map((item) => (
+              <div className="list-container-sub">
+                <div className="item-inner">
+                  <div className="item-name-category">
+                    <div className="item-name">
+                      <MdInventory className="item-icon" /> {item.itemName}
+                      <div
+                        className={
+                          "category " + "bg-" + item.category.toLowerCase()
+                        }
+                      >
+                        {" "}
+                        {item.category}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="item-name-user">
+                    <div className="count"> Qty:{item.count}</div>
+                    <div className="name"> {item.fullName}</div>
+                    <div className="date">
+                      {new Date(item.purchaseDate).toLocaleDateString()}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="buttons-container">
+                  {item.userId === userId ? (
+                    <>
+                      <button
+                        className="deletebtn"
+                        onClick={() => deleteItem(item._id)}
+                      >
+                        <FaTrash />
+                      </button>
+                      <button
+                        className="editbtn"
+                        onClick={() => startEditing(item)}
+                      >
+                        <FaEdit />
+                      </button>
+                    </>
+                  ) : (
+                    <Button className="disabled" disabled>
+                      <AiOutlineStop />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
         </div>
-        <button onClick={addToList} className="manual-add">
-          <PlusCircleFilled /> Add to List
-        </button>
       </div>
       {/* Print PDF Button */}
 
@@ -505,78 +582,6 @@ const App: React.FC = () => {
         />
       </Modal>
       {error && <p className="error-message">{error}</p>}
-      <div className="search-print-container">
-        <Input
-          type="text"
-          placeholder="Search items..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="search-bar"
-        />
-        <button onClick={showModal} className="print-pdf-button">
-          Print PDF
-        </button>
-      </div>
-      <div className="list-container">
-        {currentItems.length === 0 ? (
-          <>
-            <Empty /> Your list is empty.
-          </>
-        ) : (
-          currentItems.map((item) => (
-            <div className="list-container-sub">
-              <div className="item-inner">
-                <div className="item-name-category">
-                  <div
-                    className={
-                      "category " + "bg-" + item.category.toLowerCase()
-                    }
-                  >
-                    {" "}
-                    {item.category}
-                  </div>
-                  <div className="item-name">
-                    <MdInventory className="item-icon" /> {item.itemName}
-                    <div className="count">{item.count}</div>
-                  </div>
-                </div>
-                <div className="item-name-user">
-                  <div className="name"> {item.fullName}</div>
-                  <div className="date">
-                    {new Date(item.purchaseDate).toLocaleDateString()}
-                  </div>
-                </div>
-              </div>
-
-              <div className="buttons-container">
-                {item.userId === userId ? (
-                  <>
-                    <button
-                      className="deletebtn"
-                      onClick={() => deleteItem(item._id)}
-                    >
-                      <FaTrash />
-                    </button>
-                    <button
-                      className="editbtn"
-                      onClick={() => startEditing(item)}
-                    >
-                      <FaEdit />
-                    </button>
-                  </>
-                ) : (
-                  <Button className="disabled" disabled>
-                    <AiOutlineStop />
-                  </Button>
-                )}
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-      <button onClick={deleteAllPurchases} className="delete-all-button">
-        <FaTrash /> Delete All Purchases
-      </button>
 
       {/* Pagination */}
       <Pagination
