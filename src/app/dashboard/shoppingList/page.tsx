@@ -86,6 +86,14 @@ const App: React.FC = () => {
         }
       );
 
+      // const response = await axios.get(
+      //   `http://localhost:5000/api/purchases/home/${response1.data.homeName}`,
+      //   {
+      //     headers: { Authorization: `Bearer ${token}` },
+      //     params: { year: 2024, month: 10 },
+      //   }
+      // );
+
       if (!response.data.purchases) {
         setItems([]);
       } else {

@@ -3,6 +3,7 @@
 import { useState, useRef, ChangeEvent } from "react";
 import Tesseract from "tesseract.js";
 import "../components/ImageToText.sass";
+import axios from "axios";
 
 const categories = ["Food", "Electronics", "Groceries", "Clothing", "Other"];
 
@@ -18,6 +19,14 @@ interface ExtractedData {
   items: ExtractedItem[];
 }
 
+interface Additem {
+  name: string;
+  amount: number;
+  date: string;
+  category: string;
+  description?: string;
+}
+
 export default function ImageToText() {
   const [image, setImage] = useState<string | null>(null);
   const [extractedText, setExtractedText] = useState<string>("");
@@ -26,6 +35,45 @@ export default function ImageToText() {
   const [loading, setLoading] = useState<boolean>(false);
   const [submittedData, setSubmittedData] = useState<ExtractedData[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [error, setError] = useState<string>("");
+
+  const addToList = async (index: number) => {
+    const newItem = items[index];
+    if (!newItem.text.trim()) {
+      setError("Name cannot be empty.");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/finance/",
+        {
+          name: newItem.text,
+          amount: parseFloat(newItem.amount.replace("$", "")) || 0,
+          date: new Date().toISOString(),
+          category: newItem.category || "Other",
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (response.data) {
+        setItems([]);
+        fileInputRef.current!.value = ""; // Clear the file input
+        setImage(null); // Clear the image preview
+        setError("");
+        setExtractedText(""); // Clear the extracted text
+        setLoading(false);
+      }
+    } catch (err) {
+      setLoading(false);
+      setError("Failed to add item.");
+    }
+  };
 
   const handleImageUpload = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -83,31 +131,30 @@ export default function ImageToText() {
   };
 
   const handleTextChange = (index: number, newText: string) => {
-    const updatedItems = [...items];
-    updatedItems[index].text = newText;
-    setItems(updatedItems);
+    setItems((prevItems) => {
+      const updatedItems = [...prevItems];
+      updatedItems[index] = { ...updatedItems[index], text: newText };
+      return updatedItems;
+    });
   };
 
   const handleAmountChange = (index: number, newAmount: string) => {
-    const updatedItems = [...items];
-    updatedItems[index].amount = "$" + newAmount.replace(/\D/g, ""); // Remove non-numeric characters and prepend $
-    setItems(updatedItems);
+    setItems((prevItems) => {
+      const updatedItems = [...prevItems];
+      updatedItems[index] = {
+        ...updatedItems[index],
+        amount: "$" + newAmount.replace(/[^\d\.]/g, ""),
+      };
+      return updatedItems;
+    });
   };
 
   const handleCategoryChange = (index: number, newCategory: string) => {
-    const updatedItems = [...items];
-    updatedItems[index].category = newCategory;
-    setItems(updatedItems);
-  };
-
-  const handleSubmit = () => {
-    if (image && items.length > 0) {
-      setSubmittedData([...submittedData, { image, totalPrice, items }]);
-      setImage(null);
-      setItems([]);
-      setTotalPrice(null);
-      setExtractedText("");
-    }
+    setItems((prevItems) => {
+      const updatedItems = [...prevItems];
+      updatedItems[index] = { ...updatedItems[index], category: newCategory };
+      return updatedItems;
+    });
   };
 
   return (
@@ -139,36 +186,29 @@ export default function ImageToText() {
             <div key={index} className="item-row">
               <input
                 type="text"
-                value={item.text} // Only the description, without price
+                value={item.text}
                 onChange={(e) => handleTextChange(index, e.target.value)}
               />
               <input
                 type="text"
-                value={item.amount} // Display amount with currency symbol
-                onChange={(e) =>
-                  handleAmountChange(
-                    index,
-                    e.target.value.replace(/[^\d\.]/g, "")
-                  )
-                } // Clean the input to allow only numbers
+                value={item.amount}
+                onChange={(e) => handleAmountChange(index, e.target.value)}
                 className="amount-input"
               />
-              {item.category && (
-                <select
-                  value={item.category}
-                  onChange={(e) => handleCategoryChange(index, e.target.value)}
-                >
-                  {categories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-              )}
+              <select
+                value={item.category}
+                onChange={(e) => handleCategoryChange(index, e.target.value)}
+              >
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+              <button onClick={() => addToList(index)}>Submit</button>
             </div>
           ))}
           {totalPrice && <p>Total Price: {totalPrice}</p>}
-          <button onClick={handleSubmit}>Submit</button>
         </div>
       )}
     </div>
