@@ -4,14 +4,25 @@ import { useState, useRef, ChangeEvent } from "react";
 import Tesseract from "tesseract.js";
 import "../components/ImageToText.sass";
 
+const categories = ["Food", "Electronics", "Groceries", "Clothing", "Other"];
+
+interface ExtractedItem {
+  text: string;
+  amount: string;
+  category?: string;
+}
+
 interface ExtractedData {
   image: string;
   totalPrice: string | null;
+  items: ExtractedItem[];
 }
 
 export default function ImageToText() {
   const [image, setImage] = useState<string | null>(null);
-  const [text, setText] = useState<string>("");
+  const [extractedText, setExtractedText] = useState<string>("");
+  const [items, setItems] = useState<ExtractedItem[]>([]);
+  const [totalPrice, setTotalPrice] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [submittedData, setSubmittedData] = useState<ExtractedData[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -34,129 +45,130 @@ export default function ImageToText() {
     Tesseract.recognize(imageData, "eng", {
       logger: (m) => console.log(m),
     }).then(({ data: { text } }) => {
-      setText(text);
+      setExtractedText(text);
       setLoading(false);
     });
   };
 
-  // Function to extract the total price from lines containing "$", "LKR", "net amount" or "net amt"
-  const getTotalPrice = (text: string) => {
-    const lines = text.split("\n");
+  const processExtractedText = () => {
+    const lines = extractedText
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line);
 
-    // Find lines that contain "total", "net amount", "net amt", "$", or "LKR" and avoid "subtotal"
-    const totalLine = lines.find(
-      (line) =>
-        /total|net\s?amount|net\s?amt/i.test(line) &&
-        (/\$|LKR/.test(line) || !/\$|LKR/.test(line)) &&
-        !/subtotal/i.test(line)
+    const filteredItems = lines
+      .filter(
+        (line) =>
+          /\$/i.test(line) &&
+          !/total|change|cash|net amount|net amt/i.test(line)
+      )
+      .map((line) => {
+        const priceMatch = line.match(/\$(\d+(\.\d{1,2})?)/);
+        return {
+          text: line.replace(/\$\d+(\.\d{1,2})?/, "").trim(),
+          amount: priceMatch ? priceMatch[0] : "",
+          category: "Other",
+        };
+      });
+
+    setItems(filteredItems);
+
+    const totalLine = lines.find((line) =>
+      /total|net amount|net amt/i.test(line)
     );
-
     if (totalLine) {
-      // Extract the price from the total line
-      const pricePattern =
-        /\$?\d+(\.\d{1,2})?|\bLKR\b\s?\d+(\.\d{1,2})?|\d+(\.\d{1,2})?/g; // Regex for prices with "$", "LKR", or plain numbers
-      const prices = totalLine.match(pricePattern);
-      return prices ? prices[0] : null; // Return the first match (expected to be the total price)
+      const priceMatch = totalLine.match(/\$(\d+(\.\d{1,2})?)/);
+      setTotalPrice(priceMatch ? priceMatch[0] : null);
     }
-    return null; // If no valid total line is found
   };
 
-  const openCamera = () => {
-    fileInputRef.current?.click();
+  const handleTextChange = (index: number, newText: string) => {
+    const updatedItems = [...items];
+    updatedItems[index].text = newText;
+    setItems(updatedItems);
   };
 
-  const handleDelete = () => {
-    setImage(null);
-    setText("");
-    // Reset the file input so the same file can be uploaded again
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ""; // This is the fix
-    }
+  const handleAmountChange = (index: number, newAmount: string) => {
+    const updatedItems = [...items];
+    updatedItems[index].amount = "$" + newAmount.replace(/\D/g, ""); // Remove non-numeric characters and prepend $
+    setItems(updatedItems);
+  };
+
+  const handleCategoryChange = (index: number, newCategory: string) => {
+    const updatedItems = [...items];
+    updatedItems[index].category = newCategory;
+    setItems(updatedItems);
   };
 
   const handleSubmit = () => {
-    if (image && text) {
-      const totalPrice = getTotalPrice(text);
-      if (totalPrice) {
-        setSubmittedData([
-          ...submittedData,
-          { image: image, totalPrice: totalPrice }, // Save only the total price
-        ]);
-        handleDelete(); // Clear after submit
-      }
+    if (image && items.length > 0) {
+      setSubmittedData([...submittedData, { image, totalPrice, items }]);
+      setImage(null);
+      setItems([]);
+      setTotalPrice(null);
+      setExtractedText("");
     }
-  };
-
-  const handleDeleteSubmission = (index: number) => {
-    setSubmittedData(submittedData.filter((_, i) => i !== index));
   };
 
   return (
     <div className="image-to-text-container">
-      <h2 className="heading">Upload Bill (Image/PDF)</h2>
+      <h2>Upload Bill (Image/PDF)</h2>
       <input
         type="file"
-        accept="image/*,application/pdf"
+        accept="image/*"
         ref={fileInputRef}
         onChange={handleImageUpload}
-        className="file-input"
       />
-      <button onClick={openCamera} className="btn-upload">
-        Open Camera / Upload
-      </button>
+      <button onClick={() => fileInputRef.current?.click()}>Upload</button>
 
-      {image && (
-        <div className="image-preview">
-          <img src={image} alt="Uploaded" className="image" />
-          <button onClick={handleDelete} className="btn-delete">
-            Delete Image
-          </button>
+      {image && <img src={image} alt="Uploaded" className="uploaded-image" />}
+      {loading && <p>Processing...</p>}
+
+      {extractedText && (
+        <div className="extracted-text">
+          <h3>Extracted Text</h3>
+          <pre>{extractedText}</pre>
+          <button onClick={processExtractedText}>Add to List</button>
         </div>
       )}
 
-      {loading && <p className="loading">Processing...</p>}
-
-      {text && (
-        <div className="text-extracted">
-          <h3 className="text-title">Extracted Text:</h3>
-          <pre className="text-content">{text}</pre>
-        </div>
-      )}
-
-      {image && text && (
-        <button onClick={handleSubmit} className="btn-submit">
-          Submit Total Price
-        </button>
-      )}
-
-      {submittedData.length > 0 && (
-        <div className="submitted-data">
-          <h3 className="submitted-title">Submitted Data</h3>
-          {submittedData.map((data, index) => (
-            <div key={index} className="submitted-item">
-              <div className="submitted-image-container">
-                <img
-                  src={data.image}
-                  alt="Submitted"
-                  className="submitted-image"
-                />
-              </div>
-              <div className="submitted-text">
-                {data.totalPrice && (
-                  <div className="prices">
-                    <span className="prices-label">Total Price:</span>
-                    <span className="total-price">{data.totalPrice}</span>
-                  </div>
-                )}
-                <button
-                  onClick={() => handleDeleteSubmission(index)}
-                  className="btn-delete-submission"
+      {items.length > 0 && (
+        <div className="editable-items">
+          <h3>Filtered Items</h3>
+          {items.map((item, index) => (
+            <div key={index} className="item-row">
+              <input
+                type="text"
+                value={item.text} // Only the description, without price
+                onChange={(e) => handleTextChange(index, e.target.value)}
+              />
+              <input
+                type="text"
+                value={item.amount} // Display amount with currency symbol
+                onChange={(e) =>
+                  handleAmountChange(
+                    index,
+                    e.target.value.replace(/[^\d\.]/g, "")
+                  )
+                } // Clean the input to allow only numbers
+                className="amount-input"
+              />
+              {item.category && (
+                <select
+                  value={item.category}
+                  onChange={(e) => handleCategoryChange(index, e.target.value)}
                 >
-                  Delete Submission
-                </button>
-              </div>
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
           ))}
+          {totalPrice && <p>Total Price: {totalPrice}</p>}
+          <button onClick={handleSubmit}>Submit</button>
         </div>
       )}
     </div>
