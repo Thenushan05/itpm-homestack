@@ -1,151 +1,82 @@
-$image-background: #f9fafb
-$primary-color: #3498db
-$font-family: 'Arial', sans-serif
-$btn-radius: 8px
-
-body
-    font-family: $font-family
-    background-color: #f4f4f4
-    color: #333
-    margin: 0
-    padding: 0
-
 .image-to-text-container
-    padding: 20px
-    margin: 0 auto
     max-width: 600px
-    background-color: white
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1)
+    margin: auto
+    padding: 20px
+    background: #ffffff
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1)
     border-radius: 10px
+    text-align: center
 
-.heading
-    font-size: 1.5rem
-    font-weight: 700
-    margin-bottom: 1rem
+h2
+    font-size: 24px
+    margin-bottom: 15px
     color: #333
 
-.file-input
+input[type="file"]
     display: none
 
-.btn-upload
-    background-color: $primary-color
+button
+    background: #007bff
     color: white
-    padding: 10px 20px
-    border-radius: $btn-radius
+    border: none
+    padding: 10px 15px
+    border-radius: 5px
     cursor: pointer
+    margin-top: 10px
+    font-size: 16px
+    transition: background 0.3s ease
 
     &:hover
-        background-color: darken($primary-color, 10%)
+        background: #0056b3
 
-.image-preview
-    margin-top: 1rem
-    position: relative
+.editable-items
+    margin-top: 20px
+    padding: 15px
+    background: #f9f9f9
+    border-radius: 8px
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1)
 
-    .image
-        max-width: 100%
-        border-radius: 10px
+    h3
+        font-size: 20px
+        margin-bottom: 10px
+        color: #444
 
-    .btn-delete
-        position: absolute
-        top: 10px
-        right: 10px
-        background-color: red
-        color: white
-        padding: 5px 10px
-        border-radius: $btn-radius
-        cursor: pointer
+    .item-row
+        display: flex
+        align-items: center
+        justify-content: space-between
+        background: #fff
+        padding: 8px
+        border-radius: 5px
+        margin-bottom: 8px
+        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1)
 
-    &:hover
-        background-color: darken(red, 10%)
+    input
+        flex: 1
+        padding: 5px
+        border: 1px solid #ccc
+        border-radius: 5px
+        font-size: 14px
 
-.loading
-    margin-top: 1rem
-    font-size: 1rem
+    select
+        margin-left: 10px
+        padding: 5px
+        border-radius: 5px
+        border: 1px solid #ccc
+        font-size: 14px
+
+p
+    font-size: 16px
     color: #666
+    margin-top: 10px
 
-.text-extracted
-    margin-top: 1rem
-
-    .text-title
-        font-weight: bold
-        font-size: 1.1rem
-        margin-bottom: 0.5rem
-
-    .text-content
-        white-space: pre-wrap
-        word-wrap: break-word
-        font-size: 1rem
-        color: #333
-        padding: 10px
-        background-color: #f1f1f1
-        border-radius: 8px
+.total-price
+    font-size: 18px
+    font-weight: bold
+    color: #28a745
+    margin-top: 10px
 
 .btn-submit
-    margin-top: 1rem
-    background-color: #28a745
-    color: white
-    padding: 10px 20px
-    border-radius: $btn-radius
-    cursor: pointer
-
+    background: #28a745
     &:hover
-        background-color: darken(#28a745, 10%)
-
-.submitted-data
-    margin-top: 2rem
-
-    .submitted-title
-        font-size: 1.25rem
-        font-weight: 700
-        margin-bottom: 1rem
-
-    .submitted-item
-        display: flex
-        margin-bottom: 1rem
-        padding: 1rem
-        background-color: #f9f9f9
-        border-radius: 10px
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)
-
-    .submitted-image-container
-        margin-right: 1rem
-        .submitted-image
-            width: 80px
-            height: 80px
-            object-fit: cover
-            border-radius: 10px
-
-    .submitted-text
-        flex: 1
-
-        .submitted-description
-            font-size: 1rem
-            color: #333
-            margin-bottom: 0.5rem
-
-        .prices
-            margin-top: 1rem
-
-    &-label
-        font-weight: bold
-        color: #4c8bf5
-
-    &-list
-        list-style: none
-        padding: 0
-        margin: 0
-
-        .price-item
-            font-size: 1rem
-            color: #28a745
-
-        .btn-delete-submission
-            background-color: red
-            color: white
-            padding: 5px 10px
-            border-radius: $btn-radius
-            cursor: pointer
-            margin-top: 1rem
-
-        &:hover
-            background-color: darken(red, 10%)
+        background: #218838
