@@ -51,9 +51,8 @@ const WasteManagement: React.FC = () => {
     <div className="container">
       <h1 className="title">Waste Management Dashboard</h1>
       <div className="filter-buttons">
-        <button className="active">Daily</button>
-        <button className="weekly">Weekly</button>
-        <button className="monthly">Monthly</button>
+        <h2 className="active">Monthly</h2>
+
       </div>
       <div className="grid">
         <div className="card">
