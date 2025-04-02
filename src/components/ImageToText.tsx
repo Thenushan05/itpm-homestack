@@ -3,18 +3,77 @@
 import { useState, useRef, ChangeEvent } from "react";
 import Tesseract from "tesseract.js";
 import "../components/ImageToText.sass";
+import axios from "axios";
+
+const categories = ["Food", "Electronics", "Groceries", "Clothing", "Other"];
+
+interface ExtractedItem {
+  text: string;
+  amount: string;
+  category?: string;
+}
 
 interface ExtractedData {
   image: string;
   totalPrice: string | null;
+  items: ExtractedItem[];
+}
+
+interface Additem {
+  name: string;
+  amount: number;
+  date: string;
+  category: string;
+  description?: string;
 }
 
 export default function ImageToText() {
   const [image, setImage] = useState<string | null>(null);
-  const [text, setText] = useState<string>("");
+  const [extractedText, setExtractedText] = useState<string>("");
+  const [items, setItems] = useState<ExtractedItem[]>([]);
+  const [totalPrice, setTotalPrice] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [submittedData, setSubmittedData] = useState<ExtractedData[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [error, setError] = useState<string>("");
+
+  const addToList = async (index: number) => {
+    const newItem = items[index];
+    if (!newItem.text.trim()) {
+      setError("Name cannot be empty.");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/finance/",
+        {
+          name: newItem.text,
+          amount: parseFloat(newItem.amount.replace("$", "")) || 0,
+          date: new Date().toISOString(),
+          category: newItem.category || "Other",
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (response.data) {
+        setItems([]);
+        fileInputRef.current!.value = ""; // Clear the file input
+        setImage(null); // Clear the image preview
+        setError("");
+        setExtractedText(""); // Clear the extracted text
+        setLoading(false);
+      }
+    } catch (err) {
+      setLoading(false);
+      setError("Failed to add item.");
+    }
+  };
 
   const handleImageUpload = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -34,129 +93,122 @@ export default function ImageToText() {
     Tesseract.recognize(imageData, "eng", {
       logger: (m) => console.log(m),
     }).then(({ data: { text } }) => {
-      setText(text);
+      setExtractedText(text);
       setLoading(false);
     });
   };
 
-  // Function to extract the total price from lines containing "$", "LKR", "net amount" or "net amt"
-  const getTotalPrice = (text: string) => {
-    const lines = text.split("\n");
+  const processExtractedText = () => {
+    const lines = extractedText
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line);
 
-    // Find lines that contain "total", "net amount", "net amt", "$", or "LKR" and avoid "subtotal"
-    const totalLine = lines.find(
-      (line) =>
-        /total|net\s?amount|net\s?amt/i.test(line) &&
-        (/\$|LKR/.test(line) || !/\$|LKR/.test(line)) &&
-        !/subtotal/i.test(line)
+    const filteredItems = lines
+      .filter(
+        (line) =>
+          /\$/i.test(line) &&
+          !/total|change|cash|net amount|net amt/i.test(line)
+      )
+      .map((line) => {
+        const priceMatch = line.match(/\$(\d+(\.\d{1,2})?)/);
+        return {
+          text: line.replace(/\$\d+(\.\d{1,2})?/, "").trim(),
+          amount: priceMatch ? priceMatch[0] : "",
+          category: "Other",
+        };
+      });
+
+    setItems(filteredItems);
+
+    const totalLine = lines.find((line) =>
+      /total|net amount|net amt/i.test(line)
     );
-
     if (totalLine) {
-      // Extract the price from the total line
-      const pricePattern =
-        /\$?\d+(\.\d{1,2})?|\bLKR\b\s?\d+(\.\d{1,2})?|\d+(\.\d{1,2})?/g; // Regex for prices with "$", "LKR", or plain numbers
-      const prices = totalLine.match(pricePattern);
-      return prices ? prices[0] : null; // Return the first match (expected to be the total price)
-    }
-    return null; // If no valid total line is found
-  };
-
-  const openCamera = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleDelete = () => {
-    setImage(null);
-    setText("");
-    // Reset the file input so the same file can be uploaded again
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ""; // This is the fix
+      const priceMatch = totalLine.match(/\$(\d+(\.\d{1,2})?)/);
+      setTotalPrice(priceMatch ? priceMatch[0] : null);
     }
   };
 
-  const handleSubmit = () => {
-    if (image && text) {
-      const totalPrice = getTotalPrice(text);
-      if (totalPrice) {
-        setSubmittedData([
-          ...submittedData,
-          { image: image, totalPrice: totalPrice }, // Save only the total price
-        ]);
-        handleDelete(); // Clear after submit
-      }
-    }
+  const handleTextChange = (index: number, newText: string) => {
+    setItems((prevItems) => {
+      const updatedItems = [...prevItems];
+      updatedItems[index] = { ...updatedItems[index], text: newText };
+      return updatedItems;
+    });
   };
 
-  const handleDeleteSubmission = (index: number) => {
-    setSubmittedData(submittedData.filter((_, i) => i !== index));
+  const handleAmountChange = (index: number, newAmount: string) => {
+    setItems((prevItems) => {
+      const updatedItems = [...prevItems];
+      updatedItems[index] = {
+        ...updatedItems[index],
+        amount: "$" + newAmount.replace(/[^\d\.]/g, ""),
+      };
+      return updatedItems;
+    });
+  };
+
+  const handleCategoryChange = (index: number, newCategory: string) => {
+    setItems((prevItems) => {
+      const updatedItems = [...prevItems];
+      updatedItems[index] = { ...updatedItems[index], category: newCategory };
+      return updatedItems;
+    });
   };
 
   return (
     <div className="image-to-text-container">
-      <h2 className="heading">Upload Bill (Image/PDF)</h2>
+      <h2>Upload Bill (Image/PDF)</h2>
       <input
         type="file"
-        accept="image/*,application/pdf"
+        accept="image/*"
         ref={fileInputRef}
         onChange={handleImageUpload}
-        className="file-input"
       />
-      <button onClick={openCamera} className="btn-upload">
-        Open Camera / Upload
-      </button>
+      <button onClick={() => fileInputRef.current?.click()}>Upload</button>
 
-      {image && (
-        <div className="image-preview">
-          <img src={image} alt="Uploaded" className="image" />
-          <button onClick={handleDelete} className="btn-delete">
-            Delete Image
-          </button>
+      {image && <img src={image} alt="Uploaded" className="uploaded-image" />}
+      {loading && <p>Processing...</p>}
+
+      {extractedText && (
+        <div className="extracted-text">
+          <h3>Extracted Text</h3>
+          <pre>{extractedText}</pre>
+          <button onClick={processExtractedText}>Add to List</button>
         </div>
       )}
 
-      {loading && <p className="loading">Processing...</p>}
-
-      {text && (
-        <div className="text-extracted">
-          <h3 className="text-title">Extracted Text:</h3>
-          <pre className="text-content">{text}</pre>
-        </div>
-      )}
-
-      {image && text && (
-        <button onClick={handleSubmit} className="btn-submit">
-          Submit Total Price
-        </button>
-      )}
-
-      {submittedData.length > 0 && (
-        <div className="submitted-data">
-          <h3 className="submitted-title">Submitted Data</h3>
-          {submittedData.map((data, index) => (
-            <div key={index} className="submitted-item">
-              <div className="submitted-image-container">
-                <img
-                  src={data.image}
-                  alt="Submitted"
-                  className="submitted-image"
-                />
-              </div>
-              <div className="submitted-text">
-                {data.totalPrice && (
-                  <div className="prices">
-                    <span className="prices-label">Total Price:</span>
-                    <span className="total-price">{data.totalPrice}</span>
-                  </div>
-                )}
-                <button
-                  onClick={() => handleDeleteSubmission(index)}
-                  className="btn-delete-submission"
-                >
-                  Delete Submission
-                </button>
-              </div>
+      {items.length > 0 && (
+        <div className="editable-items">
+          <h3>Filtered Items</h3>
+          {items.map((item, index) => (
+            <div key={index} className="item-row">
+              <input
+                type="text"
+                value={item.text}
+                onChange={(e) => handleTextChange(index, e.target.value)}
+              />
+              <input
+                type="text"
+                value={item.amount}
+                onChange={(e) => handleAmountChange(index, e.target.value)}
+                className="amount-input"
+              />
+              <select
+                value={item.category}
+                onChange={(e) => handleCategoryChange(index, e.target.value)}
+              >
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+              <button onClick={() => addToList(index)}>Submit</button>
             </div>
           ))}
+          {totalPrice && <p>Total Price: {totalPrice}</p>}
         </div>
       )}
     </div>

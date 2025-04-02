@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { Form, Input, Button, notification, Spin, Radio } from "antd";
+import { Form, Input, Button, notification, Spin, Switch, Modal } from "antd";
 import { Col, Row } from "antd";
 import "../auth-sass.sass";
 import {
@@ -21,14 +21,15 @@ interface SignupFormValues {
   password: string;
   confirmPassword: string;
   role: "owner" | "member";
-  ownerId?: string;
+  homeName: string;
 }
 
-const SignupForm = () => {
+const SignupForm: React.FC = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
-  const [role, setRole] = useState<"owner" | "member">("owner");
+  const [role, setRole] = useState<"owner" | "member">("owner"); // Default set to "owner"
+  const [isModalVisible, setIsModalVisible] = useState(false); // State for controlling the modal visibility
 
   const onFinish = async (values: SignupFormValues) => {
     setLoading(true);
@@ -41,32 +42,45 @@ const SignupForm = () => {
         email: values.email,
         password: values.password,
         role: values.role,
-        ownerId: values.role === "member" ? values.ownerId : undefined, // Only send if member
+        homeName:
+          values.role === "member" || values.role === "owner"
+            ? values.homeName
+            : undefined,
       };
 
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/signup",
-        payload
-      );
+      const endpoint =
+        values.role === "owner"
+          ? "http://localhost:5000/api/auth/signup-owner"
+          : "http://localhost:5000/api/auth/signup-family-member";
+
+      const response = await axios.post(endpoint, payload);
 
       if (response.status === 201) {
-        notification.success({
-          message: "Signup Successful!",
-          description: "You have successfully signed up.",
-        });
-        form.resetFields();
+        if (values.role === "owner") {
+          // Navigate to dashboard if the user is an owner
+          notification.success({
+            message: "Signup Successful!",
+            description: "You have successfully signed up as an owner.",
+          });
+          setTimeout(() => {
+            window.location.href = "/dashboard";
+          }, 2000);
+        } else {
+          // Show modal if the user is a member
+          setIsModalVisible(true);
+        }
 
-        // Redirect based on user role
-        setTimeout(() => {
-          window.location.href =
-            values.role === "owner" ? "/dashboard" : "/member-dashboard";
-        }, 2000);
+        form.resetFields();
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Signup error:", error);
 
       let errorMessage = "Something went wrong!";
-      if (error.response && error.response.data.message) {
+      if (
+        axios.isAxiosError(error) &&
+        error.response &&
+        error.response.data.message
+      ) {
         errorMessage = error.response.data.message;
       }
 
@@ -78,6 +92,16 @@ const SignupForm = () => {
       setLoading(false);
       setIsButtonDisabled(false);
     }
+  };
+
+  const handleOk = () => {
+    // Close the modal and redirect to the login page
+    setIsModalVisible(false);
+    window.location.href = "/signin";
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false); // Just close the modal if cancel is clicked
   };
 
   return (
@@ -93,12 +117,31 @@ const SignupForm = () => {
             <div className="signup-inner-form-container">
               <div className="signup-form-inner">
                 <h2 className="title">Sign Up</h2>
+
+                {/* Role toggle at the top */}
                 <Form
                   form={form}
                   name="signup"
                   onFinish={onFinish}
                   layout="vertical"
                 >
+                  <Form.Item
+                    label="Select Role"
+                    name="role"
+                    initialValue="owner"
+                  >
+                    <Switch
+                      checked={role === "member"}
+                      onChange={(checked) => {
+                        const newRole = checked ? "member" : "owner";
+                        setRole(newRole);
+                        form.setFieldsValue({ role: newRole }); // Sync role with form state
+                      }}
+                      checkedChildren="Member"
+                      unCheckedChildren="Owner"
+                    />
+                  </Form.Item>
+
                   <Form.Item
                     label="First Name"
                     name="firstname"
@@ -147,7 +190,6 @@ const SignupForm = () => {
                     ]}
                   >
                     <Input.Password
-                      placeholder="input password"
                       iconRender={(visible) =>
                         visible ? <EyeOutlined /> : <EyeInvisibleOutlined />
                       }
@@ -159,62 +201,52 @@ const SignupForm = () => {
                     name="confirmPassword"
                     dependencies={["password"]}
                     rules={[
-                      {
-                        required: true,
-                        message: "Please confirm your password!",
-                      },
                       ({ getFieldValue }) => ({
                         validator(_, value) {
-                          if (!value || getFieldValue("password") === value) {
-                            return Promise.resolve();
-                          }
-                          return Promise.reject(
-                            new Error("Passwords do not match!")
-                          );
+                          return !value || getFieldValue("password") === value
+                            ? Promise.resolve()
+                            : Promise.reject(
+                                new Error("Passwords do not match!")
+                              );
                         },
                       }),
                     ]}
                   >
                     <Input.Password
-                      placeholder="confirm password"
                       iconRender={(visible) =>
                         visible ? <EyeOutlined /> : <EyeInvisibleOutlined />
                       }
                     />
                   </Form.Item>
 
-                  {/* Role Selection */}
-                  <Form.Item
-                    label="Sign up as"
-                    name="role"
-                    initialValue="owner"
-                  >
-                    <Radio.Group
-                      onChange={(e) => setRole(e.target.value)}
-                      value={role}
-                    >
-                      <Radio value="owner">Owner</Radio>
-                      <Radio value="member">Member</Radio>
-                    </Radio.Group>
-                  </Form.Item>
-
-                  {/* Owner ID (Only if Member is selected) */}
-                  {role === "member" && (
+                  {/* Show Home ID input only if role is "owner" or "member" */}
+                  {role === "owner" && (
                     <Form.Item
-                      label="Owner ID"
-                      name="ownerId"
+                      label="Home ID (for Members)"
+                      name="homeName"
                       rules={[
-                        {
-                          required: true,
-                          message: "Please enter the Owner ID!",
-                        },
+                        { required: true, message: "Please enter a Home ID!" },
                       ]}
                     >
-                      <Input placeholder="Enter Owner ID" />
+                      <Input placeholder="Enter Home ID for Members" />
                     </Form.Item>
                   )}
 
-                  {/* Submit Button */}
+                  {role === "member" && (
+                    <Form.Item
+                      label="Home ID"
+                      name="homeName"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please enter the Home ID!",
+                        },
+                      ]}
+                    >
+                      <Input placeholder="Enter Home ID" />
+                    </Form.Item>
+                  )}
+
                   <Form.Item>
                     {loading ? (
                       <Button type="primary" block disabled>
@@ -244,6 +276,24 @@ const SignupForm = () => {
           </Col>
         </Row>
       </div>
+
+      {/* Modal for Member SignUp */}
+      <Modal
+        title="Member Created!"
+        visible={isModalVisible}
+        onOk={handleOk}
+        onCancel={handleCancel}
+        footer={[
+          <Button key="back" onClick={handleCancel}>
+            Cancel
+          </Button>,
+          <Button key="submit" type="primary" onClick={handleOk}>
+            Back to Login
+          </Button>,
+        ]}
+      >
+        <p>You have successfully signed up as a member.</p>
+      </Modal>
     </div>
   );
 };
