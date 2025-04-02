@@ -421,50 +421,66 @@ const App: React.FC = () => {
       <h1 className="title primary-txt">🛒 Shopping List</h1>
       {error && <p className="error-message">{error}</p>}
       <div className="group-container">
-        <div className="add-item-container-main">
-          <div className="input-container">
-            <input
-              type="text"
-              value={manualInput || transcript}
-              onChange={(e) => setManualInput(e.target.value)}
-              placeholder="Type or speak to add an item..."
-              className="manual-input"
-            />
-            <button className="mic-button" onClick={toggleListening}>
-              {micStatus === "mic" ? (
-                <FaMicrophone className="mic-icon" />
-              ) : micStatus === "stop" ? (
-                <FaRegStopCircle />
-              ) : (
-                <HiRefresh />
-              )}
+        <div className="add-item-container">
+          <div className="heading-container">
+            <span>Add Item</span>
+          </div>
+          <div className="add-item-container-main">
+            <div className="text-container">
+              <span>Item Name</span>
+            </div>
+            <div className="input-container">
+              <input
+                type="text"
+                value={manualInput || transcript}
+                onChange={(e) => setManualInput(e.target.value)}
+                placeholder="Type or speak to add an item..."
+                className="manual-input"
+              />
+              <button className="mic-button" onClick={toggleListening}>
+                {micStatus === "mic" ? (
+                  <FaMicrophone className="mic-icon" />
+                ) : micStatus === "stop" ? (
+                  <FaRegStopCircle />
+                ) : (
+                  <HiRefresh />
+                )}
+              </button>
+            </div>
+            <div className="count-category-container">
+              <div className="text-container">
+                <span>Qantity</span>
+              </div>
+              <input
+                type="string"
+                min="1"
+                value={manualCount}
+                onChange={(e) => setManualCount(e.target.value)}
+                className="count-input"
+                placeholder="Count"
+              />
+            </div>
+            <div className="category-select-container">
+              <div className="text-container">
+                <span>Category</span>
+              </div>
+              <div className="category-select">
+                <Select
+                  className="category-select"
+                  defaultValue="Select Category"
+                  style={{ width: "100%", height: "40px" }}
+                  onChange={(e) => setManualCategory(e)}
+                >
+                  <Option value="entertainment">entertainment</Option>
+                  <Option value="clothing">clothing</Option>
+                  <Option value="other">other</Option>
+                </Select>
+              </div>
+            </div>
+            <button onClick={addToList} className="manual-add">
+              <PlusCircleFilled /> Add to List
             </button>
           </div>
-          <div className="count-category-container">
-            <input
-              type="string"
-              min="1"
-              value={manualCount}
-              onChange={(e) => setManualCount(e.target.value)}
-              className="count-input"
-              placeholder="Count"
-            />
-            <div className="category-select-container">
-              <Select
-                className="category-select"
-                defaultValue="Select Category"
-                style={{ width: 200 }}
-                onChange={(e) => setManualCategory(e)}
-              >
-                <Option value="entertainment">entertainment</Option>
-                <Option value="clothing">clothing</Option>
-                <Option value="other">other</Option>
-              </Select>
-            </div>
-          </div>
-          <button onClick={addToList} className="manual-add">
-            <PlusCircleFilled /> Add to List
-          </button>
         </div>
 
         <div className="list-container">
@@ -494,7 +510,7 @@ const App: React.FC = () => {
                 <div className="item-inner">
                   <div className="item-name-category">
                     <div className="item-name">
-                      <MdInventory className="item-icon" /> {item.itemName}
+                      {item.itemName}
                       <div
                         className={
                           "category " + "bg-" + item.category.toLowerCase()
@@ -521,7 +537,7 @@ const App: React.FC = () => {
                         className="deletebtn"
                         onClick={() => deleteItem(item._id)}
                       >
-                        <FaTrash />
+                        <FaTrash className="delete-btn" />
                       </button>
                       <button
                         className="editbtn"
