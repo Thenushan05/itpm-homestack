@@ -11,22 +11,16 @@
   "dependencies": {
     "@ant-design/icons": "^5.6.1",
     "@ant-design/nextjs-registry": "^1.0.2",
-<<<<<<< HEAD
-<<<<<<< HEAD
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.49.1",
     "antd": "^5.24.2",
-=======
-=======
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@mui/material": "^7.0.1",
     "@radix-ui/react-slot": "^1.1.2",
     "@shadcn/ui": "^0.0.4",
->>>>>>> f55bde1d7e2e26645ff14b66196f197aa6721170
     "antd": "^5.24.3",
     "apexcharts": "^4.5.0",
->>>>>>> cefa1148e8d65d661376a8428744a27bbb6fa6ac
     "axios": "^1.8.1",
     "chart.js": "^4.4.8",
     "class-transformer": "^0.5.1",
