@@ -2,10 +2,18 @@
 
 import { useState, useRef, ChangeEvent } from "react";
 import Tesseract from "tesseract.js";
-import "../components/ImageToText.sass";
 import axios from "axios";
+import "../components/ImageToText.sass";
 
-const categories = ["Food", "Electronics", "Groceries", "Clothing", "Other"];
+const categories = [
+  "Food",
+  "Electronics",
+  "Utilities",
+  "Entertainment",
+  "Clothes", // Fixed typo from 'Clothing' to 'Clothes'
+  "Shopping",
+  "Other",
+];
 
 interface ExtractedItem {
   text: string;
@@ -13,18 +21,11 @@ interface ExtractedItem {
   category?: string;
 }
 
-interface ExtractedData {
-  image: string;
-  totalPrice: string | null;
-  items: ExtractedItem[];
-}
-
-interface Additem {
+interface AddItem {
   name: string;
   amount: number;
   date: string;
   category: string;
-  description?: string;
 }
 
 export default function ImageToText() {
@@ -33,9 +34,16 @@ export default function ImageToText() {
   const [items, setItems] = useState<ExtractedItem[]>([]);
   const [totalPrice, setTotalPrice] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [submittedData, setSubmittedData] = useState<ExtractedData[]>([]);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [manualItem, setManualItem] = useState<AddItem>({
+    name: "",
+    amount: 0,
+    date: new Date().toISOString(),
+    category: "Other",
+  });
   const [error, setError] = useState<string>("");
+  const [popupMessage, setPopupMessage] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const addToList = async (index: number) => {
     const newItem = items[index];
@@ -49,7 +57,7 @@ export default function ImageToText() {
         "http://localhost:5000/api/finance/",
         {
           name: newItem.text,
-          amount: parseFloat(newItem.amount.replace("$", "")) || 0,
+          amount: parseFloat(newItem.amount.replace("$", "")) || 0, // Ensure amount is stored correctly
           date: new Date().toISOString(),
           category: newItem.category || "Other",
         },
@@ -62,12 +70,12 @@ export default function ImageToText() {
       );
 
       if (response.data) {
-        setItems([]);
-        fileInputRef.current!.value = ""; // Clear the file input
+        const updatedItems = items.filter((_, idx) => idx !== index);
+        setItems(updatedItems);
         setImage(null); // Clear the image preview
-        setError("");
         setExtractedText(""); // Clear the extracted text
         setLoading(false);
+        showModalMessage("Item added successfully!");
       }
     } catch (err) {
       setLoading(false);
@@ -120,6 +128,7 @@ export default function ImageToText() {
       });
 
     setItems(filteredItems);
+    showModalMessage("Items added from extracted text!");
 
     const totalLine = lines.find((line) =>
       /total|net amount|net amt/i.test(line)
@@ -157,8 +166,120 @@ export default function ImageToText() {
     });
   };
 
+  const handleManualAmountChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setManualItem((prev) => ({
+      ...prev,
+      amount: newValue === "" ? 0 : parseFloat(newValue) || 0,
+    }));
+  };
+
+  const handleManualAdd = async () => {
+    if (!manualItem.name.trim() || !manualItem.amount) {
+      setError("Please enter a valid name and amount.");
+      return;
+    }
+
+    const category = categories.includes(manualItem.category)
+      ? manualItem.category
+      : "Other";
+
+    const payload = {
+      name: manualItem.name.trim(),
+      amount: Number(manualItem.amount), // Ensure amount is stored correctly without $
+      date: new Date().toISOString(),
+      category,
+    };
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/finance/",
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (response.data) {
+        setManualItem({
+          name: "",
+          amount: 0,
+          date: new Date().toISOString(),
+          category: "Other",
+        });
+        setError("");
+        showModalMessage("Manual item added successfully!");
+      }
+    } catch (err: any) {
+      setError(
+        err?.response?.data?.error || "Failed to add manual item. Try again."
+      );
+    }
+  };
+
+  const showModalMessage = (message: string) => {
+    setPopupMessage(message);
+    setShowModal(true);
+    setTimeout(() => {
+      setShowModal(false);
+    }, 3000);
+  };
+
   return (
     <div className="image-to-text-container">
+      {/* Modal for Success */}
+      {showModal && (
+        <div className="popup-modal">
+          <div className="popup-content">
+            <h3>{popupMessage}</h3>
+            <button onClick={() => setShowModal(false)} className="close-btn">
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Manual Input Section - Moved to the top */}
+      <div className="manual-input-section">
+        <h3>Manually Add Item</h3>
+        <input
+          type="text"
+          placeholder="Item name"
+          value={manualItem.name}
+          onChange={(e) =>
+            setManualItem((prev) => ({ ...prev, name: e.target.value }))
+          }
+        />
+        <div className="amount-input-container">
+          <span className="dollar-sign">$</span>
+          <input
+            type="number"
+            placeholder="Amount"
+            value={manualItem.amount === 0 ? "" : manualItem.amount} // Show empty when amount is 0
+            onChange={handleManualAmountChange} // Call the new change handler
+            className="amount-input"
+            min="0"
+          />
+        </div>
+        <select
+          value={manualItem.category}
+          onChange={(e) =>
+            setManualItem((prev) => ({ ...prev, category: e.target.value }))
+          }
+        >
+          {categories.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
+        </select>
+        <button onClick={handleManualAdd}>Add Manually</button>
+      </div>
+
+      {/* Upload Section */}
       <h2>Upload Bill (Image/PDF)</h2>
       <input
         type="file"
@@ -189,12 +310,15 @@ export default function ImageToText() {
                 value={item.text}
                 onChange={(e) => handleTextChange(index, e.target.value)}
               />
-              <input
-                type="text"
-                value={item.amount}
-                onChange={(e) => handleAmountChange(index, e.target.value)}
-                className="amount-input"
-              />
+              <div className="amount-input-container">
+                <span className="dollar-sign">$</span>
+                <input
+                  type="text"
+                  value={item.amount}
+                  onChange={(e) => handleAmountChange(index, e.target.value)}
+                  className="amount-input"
+                />
+              </div>
               <select
                 value={item.category}
                 onChange={(e) => handleCategoryChange(index, e.target.value)}
@@ -211,6 +335,8 @@ export default function ImageToText() {
           {totalPrice && <p>Total Price: {totalPrice}</p>}
         </div>
       )}
+
+      {error && <p className="error">{error}</p>}
     </div>
   );
 }

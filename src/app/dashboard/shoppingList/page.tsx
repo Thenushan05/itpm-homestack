@@ -506,7 +506,7 @@ const App: React.FC = () => {
             </>
           ) : (
             currentItems.map((item) => (
-              <div className="list-container-sub">
+              <div className="list-container-sub" key={item._id}>
                 <div className="item-inner">
                   <div className="item-name-category">
                     <div className="item-name">
@@ -562,7 +562,7 @@ const App: React.FC = () => {
       {/* Modal for PDF download confirmation */}
       <Modal
         title="Download PDF"
-        visible={isModalVisible}
+        open={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}
         okText="Download"
@@ -574,7 +574,7 @@ const App: React.FC = () => {
       {/* Edit Modal */}
       <Modal
         title="Edit Item"
-        visible={editingIndex !== null}
+        open={editingIndex !== null}
         onCancel={closeModal}
         footer={[
           <Button key="cancel" onClick={closeModal}>

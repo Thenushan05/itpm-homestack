@@ -129,7 +129,7 @@ function FinanceOverview() {
               steps={8}
               percent={50}
               trailColor="rgba(222, 209, 209, 0.92)"
-              strokeWidth={20}
+              size={20}
             />
           </div>
         </div>
