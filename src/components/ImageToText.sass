@@ -1,82 +1,146 @@
 .image-to-text-container
-    max-width: 600px
-    margin: auto
+    display: flex
+    flex-direction: column
+    align-items: center
     padding: 20px
-    background: #ffffff
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1)
-    border-radius: 10px
-    text-align: center
-
-h2
-    font-size: 24px
-    margin-bottom: 15px
-    color: #333
-
-input[type="file"]
-    display: none
-
-button
-    background: #007bff
-    color: white
-    border: none
-    padding: 10px 15px
-    border-radius: 5px
-    cursor: pointer
-    margin-top: 10px
-    font-size: 16px
-    transition: background 0.3s ease
-
-    &:hover
-        background: #0056b3
-
-.editable-items
-    margin-top: 20px
-    padding: 15px
-    background: #f9f9f9
+    background-color: #f1f1f1
     border-radius: 8px
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1)
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1)
+    max-width: 900px
+    margin: 20px auto
+
+.manual-input-section
+    width: 100%
+    background-color: #fff
+    padding: 20px
+    border-radius: 8px
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1)
+    margin-bottom: 30px
 
     h3
-        font-size: 20px
-        margin-bottom: 10px
-        color: #444
+        font-size: 1.2rem
+        color: #4CAF50
+
+    input,
+    select,
+    button
+        width: 100%
+        padding: 12px
+        margin: 10px 0
+        border: 1px solid #ccc
+        border-radius: 8px
+        font-size: 1rem
+        color: #333
+        outline: none
+
+    input:focus,
+    select:focus
+        border-color: #4CAF50
+
+    button
+        background-color: #4CAF50
+        color: #fff
+        cursor: pointer
+        border: none
+        transition: background-color 0.3s ease
+
+    button:hover
+        background-color: #ff5722
+
+h2
+    font-size: 1.5rem
+    color: #4CAF50
+    margin-top: 20px
+
+.uploaded-image
+    max-width: 100%
+    margin-top: 20px
+    border-radius: 10px
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1)
+
+.extracted-text
+    margin-top: 30px
+    padding: 20px
+    background-color: #fff
+    border-radius: 8px
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1)
+
+    pre
+        white-space: pre-wrap
+        word-wrap: break-word
+        font-size: 0.95rem
+
+.editable-items
+    width: 100%
+    background-color: #fff
+    padding: 20px
+    border-radius: 8px
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1)
 
     .item-row
         display: flex
-        align-items: center
         justify-content: space-between
-        background: #fff
-        padding: 8px
-        border-radius: 5px
-        margin-bottom: 8px
-        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1)
+        align-items: center
+        margin-bottom: 15px
 
-    input
-        flex: 1
-        padding: 5px
-        border: 1px solid #ccc
-        border-radius: 5px
-        font-size: 14px
-
+    input,
     select
-        margin-left: 10px
-        padding: 5px
-        border-radius: 5px
+        width: 45%
+        padding: 8px
+        border-radius: 8px
         border: 1px solid #ccc
-        font-size: 14px
+        font-size: 1rem
+        color: #333
+        outline: none
 
-p
-    font-size: 16px
-    color: #666
+    button
+        background-color: #4CAF50
+        color: #fff
+        padding: 8px 12px
+        border: none
+        border-radius: 8px
+        cursor: pointer
+        transition: background-color 0.3s ease
+
+    button:hover
+        background-color: #ff5722
+
+.popup-modal
+    position: fixed
+    top: 0
+    left: 0
+    right: 0
+    bottom: 0
+    display: flex
+    justify-content: center
+    align-items: center
+    background-color: rgba(0, 0, 0, 0.5)
+    z-index: 9999
+
+    .popup-content
+        background-color: #fff
+        padding: 20px
+        border-radius: 8px
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1)
+        text-align: center
+
+    h3
+        font-size: 1.2rem
+        color: #4CAF50
+
+    .close-btn
+        background-color: #ff5722
+        color: #fff
+        padding: 10px 20px
+        border: none
+        border-radius: 8px
+        cursor: pointer
+        transition: background-color 0.3s ease
+
+    .close-btn:hover
+        background-color: #e64a19
+
+.error
+    color: #f44336
+    font-size: 1rem
     margin-top: 10px
-
-.total-price
-    font-size: 18px
-    font-weight: bold
-    color: #28a745
-    margin-top: 10px
-
-.btn-submit
-    background: #28a745
-    &:hover
-        background: #218838

@@ -93,7 +93,11 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     {
       key: "/dashboard",
       icon: <HomeOutlined />,
-      label: <Link href="/dashboard">Home</Link>,
+      label: (
+        <Link href="/dashboard" prefetch={true}>
+          Home
+        </Link>
+      ),
     },
     {
       key: "finance",
@@ -103,12 +107,20 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         {
           key: "/dashboard/finance-overview",
           icon: <DollarOutlined />,
-          label: <Link href="/dashboard/finance-overview">Overview</Link>,
+          label: (
+            <Link href="/dashboard/finance-overview" prefetch={true}>
+              Overview
+            </Link>
+          ),
         },
         {
           key: "/dashboard/finance",
           icon: <CreditCardOutlined />,
-          label: <Link href="/dashboard/finance">Transactions</Link>,
+          label: (
+            <Link href="/dashboard/finance" prefetch={true}>
+              Transactions
+            </Link>
+          ),
         },
       ],
     },
@@ -120,13 +132,19 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         {
           key: "/dashboard/shoppingList",
           icon: <ShoppingCartOutlined />,
-          label: <Link href="/dashboard/shoppingList">Current List</Link>,
+          label: (
+            <Link href="/dashboard/shoppingList" prefetch={true}>
+              Current List
+            </Link>
+          ),
         },
         {
           key: "/dashboard/shoppingList/history",
           icon: <ShoppingCartOutlined />,
           label: (
-            <Link href="/dashboard/shoppingList/history">Purchase History</Link>
+            <Link href="/dashboard/shoppingList/history" prefetch={true}>
+              Purchase History
+            </Link>
           ),
         },
       ],
@@ -134,33 +152,71 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     {
       key: "4",
       icon: <AppstoreOutlined />,
-      label: <Link href="/dashboard/devices">Devices</Link>,
+      label: (
+        <Link href="/dashboard/devices" prefetch={true}>
+          Devices
+        </Link>
+      ),
     },
     {
       key: "5",
       icon: <ShoppingCartOutlined />,
-      label: <Link href="/dashboard/groceries">Groceries</Link>,
+      label: (
+        <Link href="/dashboard/groceries" prefetch={true}>
+          Groceries
+        </Link>
+      ),
     },
     {
       key: "6",
       icon: <ShoppingCartOutlined />,
-      label: <Link href="/dashboard/wastage">Wastage</Link>,
+      label: (
+        <Link href="/dashboard/wastage" prefetch={true}>
+          Wastage
+        </Link>
+      ),
     },
   ];
 
+  // const profileMenu = (
+  //   <Menu
+  //     onClick={(info) => {
+  //       if (info.key === "2") handleLogout();
+  //     }}
+  //     items={[
+  //       {
+  //         key: "1",
+  //         icon: <UserOutlined />,
+  //         label: <Link href="/dashboard/profile">Profile</Link>,
+  //       },
+  //       { type: "divider" },
+  //       { key: "2", icon: <LogoutOutlined />, label: "Logout" },
+  //     ]}
+  //   />
+  // );
+
   const profileMenu = (
     <Menu
-      onClick={(info) => {
-        if (info.key === "2") handleLogout();
-      }}
       items={[
         {
           key: "1",
           icon: <UserOutlined />,
-          label: <Link href="/dashboard/profile">Profile</Link>,
+          label: (
+            <Link href="/dashboard/profile" prefetch={true}>
+              Profile
+            </Link>
+          ),
         },
-        { type: "divider" },
-        { key: "2", icon: <LogoutOutlined />, label: "Logout" },
+        {
+          key: "divider-1",
+          type: "divider",
+        },
+        {
+          key: "2",
+          icon: <LogoutOutlined />,
+          label: "Logout",
+          onClick: handleLogout,
+        },
       ]}
     />
   );
@@ -284,12 +340,17 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                   <BellOutlined className="notification-icon" />
                 </Badge>
               </Popover>
-              <Dropdown overlay={profileMenu} trigger={["click"]}>
+              {/* <Dropdown overlay={profileMenu} trigger={["click"]}>
                 <Avatar className="profile-avatar" icon={<UserOutlined />} />
-              </Dropdown>
+              </Dropdown> */}
+
+              <Popover content={profileMenu} trigger="click">
+                <Avatar className="profile-avatar" icon={<UserOutlined />} />
+              </Popover>
             </div>
           )}
         </Header>
+
         <Content className="dashboard-content primary-bg">{children}</Content>
         {isMobile && (
           <Footer className="dashboard-footer">
@@ -307,9 +368,13 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                 <BellOutlined className="notification-icon" />
               </Badge>
             </Popover>
-            <Dropdown overlay={profileMenu} trigger={["click"]}>
+            {/* <Dropdown overlay={profileMenu} trigger={["click"]}>
               <Avatar className="profile-avatar" icon={<UserOutlined />} />
-            </Dropdown>
+            </Dropdown> */}
+
+            <Popover content={profileMenu} trigger="click">
+              <Avatar className="profile-avatar" icon={<UserOutlined />} />
+            </Popover>
           </Footer>
         )}
       </Layout>

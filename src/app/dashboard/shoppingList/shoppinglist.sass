@@ -55,30 +55,46 @@ $tablet: 768px
     @media (max-width: $mobile)
         flex-direction: column
         gap: 5px
-.add-item-container-main
-    padding: 24px
-    margin-bottom: 24px
-    border: 1px dashed $primary-color
-    border-radius: 10px
+.add-item-container
     width: 60%
-    max-height: 200px
+    .heading-container
+        border-top-left-radius: 10px
+        border-top-right-radius: 10px
+        background: $primary-color
+        padding: 12px
+
+        span
+            color: #fff
+            font-size: 18px
+
+    .add-item-container-main
+        padding: 24px
+        margin-bottom: 24px
+        border: 1px solid $primary-color
+        border-bottom-left-radius: 10px
+        border-bottom-right-radius: 10px
+
+        max-height: 400px
+
 .count-category-container
     display: flex
-    gap: 10px
-    flex-direction: row
+
+    flex-direction: column
     .count-input
         width: 100%
         padding: 10px
-        margin-bottom: 10px
+        margin-bottom: 16px
         border: 1px solid #ccc
         border-radius: 5px
         text-align: center
     .category-select-container
-        .ant-select-single
 
-            height: 42px
+    .ant-select-single
+        margin-top: 4px
+        height: 42px !important
+        width: 100% !important
         .ant-select.ant-select-outlined.category-select
-            width: 300px !important
+            width: 100% !important
         .ant-select-outlined:not(.ant-select-disabled):not(.ant-select-customize-input):not(.ant-pagination-size-changer):hover .ant-select-selector
             border-color: $primary-color
 
@@ -91,6 +107,7 @@ $tablet: 768px
     border-radius: 5px
     cursor: pointer
     font-size: 16px
+    margin-top: 16px
 
     &:hover
         background: $primary-color
@@ -99,7 +116,7 @@ $tablet: 768px
 .list-container .item-name
     font-weight: bold
     display: flex
-    margin-bottom: 10px
+    margin-bottom: 16px
     align-items: center
     gap: 4px
     font-size: 18px
@@ -213,21 +230,24 @@ input
 .search-print-container
     display: flex
     justify-content: flex-end
-    margin-bottom: 10px
+    margin-bottom: 16px
     flex-direction: row
     gap: 10px
     align-items: center
     .delete-all-button
         display: flex
         flex-direction: row
-        background-color: red
-        color: white
+        background-color: unset
+        border: 1px solid red !important
+        color: red
         padding: 8px 16px
         border: none
         border-radius: 5px
         cursor: pointer
         align-items: center
         gap: 5px
+    .delete-btn
+        color: red
     .print-pdf-button
         display: flex
         flex-direction: row
@@ -241,3 +261,5 @@ input
         gap: 5px
     .search-bar
         width: 25%
+.text-container
+    margin-bottom: 5px
