@@ -176,6 +176,11 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         </Link>
       ),
     },
+    {
+      key: "6",
+      icon: <ShoppingCartOutlined />,
+      label: <Link href="/dashboard/mealPlan">Meal Plan</Link>,
+    },
   ];
 
   // const profileMenu = (
