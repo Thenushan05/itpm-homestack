@@ -1,8 +1,8 @@
+"use client";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Container, Form, Button, Alert } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
 
-// Define types for form inputs
 interface FormData {
   age: number;
   weight: number;
@@ -12,7 +12,6 @@ interface FormData {
   dietPreference: string;
 }
 
-// Define types for nutrition results
 interface NutritionResults {
   success: boolean;
   adjustedCalories: string;
@@ -26,7 +25,8 @@ interface NutritionResults {
 }
 
 const NutritionForm: React.FC = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
+
   const [formData, setFormData] = useState<FormData>({
     age: 25,
     weight: 70,
@@ -40,7 +40,8 @@ const NutritionForm: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<any>) => {
     const target = e.target as HTMLInputElement | HTMLSelectElement;
-    const value = target.type === "number" ? parseFloat(target.value) || 0 : target.value;
+    const value =
+      target.type === "number" ? parseFloat(target.value) || 0 : target.value;
 
     setFormData({
       ...formData,
@@ -53,11 +54,7 @@ const NutritionForm: React.FC = () => {
     setError(null);
 
     try {
-      const apiUrl = "/api/nutrition/calculate"; // Use proxy
-      // Temporary workaround: Hardcode the URL if the proxy isn't working
-      // const apiUrl = "http://localhost:3003/api/nutrition/calculate";
-      console.log("📤 Sending request to:", apiUrl);
-
+      const apiUrl = "/api/nutrition/calculate";
       const response = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -67,9 +64,9 @@ const NutritionForm: React.FC = () => {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          `Failed to fetch nutrition data: ${response.status} ${response.statusText} - ${
-            errorData.error || "Unknown error"
-          }`
+          `Failed to fetch nutrition data: ${response.status} ${
+            response.statusText
+          } - ${errorData.error || "Unknown error"}`
         );
       }
 
@@ -78,10 +75,13 @@ const NutritionForm: React.FC = () => {
         throw new Error(data.error || "Failed to generate nutrition plan.");
       }
 
-      // Navigate to the results page and pass the results via state
-      navigate("/results", { state: { results: data } });
+      // Navigate to the results page (you may pass data via query or state system like Zustand)
+      router.push("/results");
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again.";
       setError(errorMessage);
       console.error("❌ Fetch Error:", err);
     }
@@ -93,8 +93,14 @@ const NutritionForm: React.FC = () => {
       {error && <Alert variant="danger">{error}</Alert>}
 
       <Form onSubmit={handleSubmit}>
-        {/* Grid layout for form inputs */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px", marginBottom: "20px" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: "20px",
+            marginBottom: "20px",
+          }}
+        >
           <Form.Group controlId="age">
             <Form.Label>Age (years)</Form.Label>
             <Form.Control
@@ -184,7 +190,6 @@ const NutritionForm: React.FC = () => {
           </Form.Group>
         </div>
 
-        {/* Full-width button with dark background */}
         <Button
           type="submit"
           style={{

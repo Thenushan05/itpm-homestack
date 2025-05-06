@@ -177,7 +177,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       ),
     },
     {
-      key: "6",
+      key: "7",
       icon: <ShoppingCartOutlined />,
       label: <Link href="/dashboard/mealPlan">Meal Plan</Link>,
     },
