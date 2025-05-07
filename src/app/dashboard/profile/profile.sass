@@ -69,3 +69,66 @@
     margin-top: 20px
     padding: 10px
     border-top: 2px solid #ddd
+
+// Custom Toast Notification Styles
+.custom-toast-container
+    position: fixed
+    top: 20px
+    right: 20px
+    z-index: 9999
+    max-width: 100%
+    width: 350px
+
+.custom-toast
+    padding: 16px
+    border-radius: 8px
+    display: flex
+    align-items: center
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2)
+    animation: slide-in 0.3s ease-out
+    margin-bottom: 10px
+    font-weight: 500
+
+.custom-toast.success
+    background-color: #f6ffed
+    border-left: 4px solid #52c41a
+    color: #135200
+
+.custom-toast.error
+    background-color: #fff1f0
+    border-left: 4px solid #f5222d
+    color: #a8071a
+
+.toast-icon
+    font-size: 22px
+    margin-right: 12px
+
+@keyframes slide-in
+    0%
+        transform: translateX(100%)
+        opacity: 0
+    100%
+        transform: translateX(0)
+        opacity: 1
+
+// Family member card styles
+.family-member-card
+    transition: all 0.3s ease
+
+    &:hover
+        transform: translateY(-5px)
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1)
+
+    .ant-card-body
+        padding: 20px 16px
+
+    .ant-card-actions
+        background-color: #f9fafc
+
+// Remove member button styles
+.remove-member-btn
+    position: relative
+    z-index: 10
+    &:hover
+        box-shadow: 0 5px 10px rgba(255, 77, 79, 0.2)
+        transform: translateY(-2px)

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import "../dashboard/dashboard.sass";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
+import axios from "axios";
 import {
   HomeOutlined,
   MenuFoldOutlined,
@@ -25,11 +26,9 @@ import {
   Menu,
   Drawer,
   Badge,
-  Dropdown,
   Avatar,
   Popover,
   List,
-  Modal,
 } from "antd";
 import Link from "next/link";
 import { expandlogo, homelogo } from "@/assets/images";
@@ -40,8 +39,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [collapsed, setCollapsed] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [popoverVisible, setPopoverVisible] = useState(false);
-  const [showAllNotifications, setShowAllNotifications] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -87,6 +86,34 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Fetch user profile data including profile photo
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const decodedToken = JSON.parse(atob(token.split(".")[1]));
+        const userId = decodedToken.id;
+
+        const response = await axios.get(
+          `http://localhost:5000/api/user/${userId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        if (response.data.profilePhoto) {
+          setProfilePhoto(`http://localhost:5000${response.data.profilePhoto}`);
+        }
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      }
+    };
+
+    fetchUserProfile();
   }, []);
 
   const menuItems = [
@@ -182,23 +209,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       label: <Link href="/dashboard/mealPlan">Meal Plan</Link>,
     },
   ];
-
-  // const profileMenu = (
-  //   <Menu
-  //     onClick={(info) => {
-  //       if (info.key === "2") handleLogout();
-  //     }}
-  //     items={[
-  //       {
-  //         key: "1",
-  //         icon: <UserOutlined />,
-  //         label: <Link href="/dashboard/profile">Profile</Link>,
-  //       },
-  //       { type: "divider" },
-  //       { key: "2", icon: <LogoutOutlined />, label: "Logout" },
-  //     ]}
-  //   />
-  // );
 
   const profileMenu = (
     <Menu
@@ -345,12 +355,20 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                   <BellOutlined className="notification-icon" />
                 </Badge>
               </Popover>
-              {/* <Dropdown overlay={profileMenu} trigger={["click"]}>
-                <Avatar className="profile-avatar" icon={<UserOutlined />} />
-              </Dropdown> */}
-
               <Popover content={profileMenu} trigger="click">
-                <Avatar className="profile-avatar" icon={<UserOutlined />} />
+                {profilePhoto ? (
+                  <Avatar
+                    className="profile-avatar"
+                    src={profilePhoto}
+                    onError={() => {
+                      // Fallback to icon if image fails to load
+                      setProfilePhoto(null);
+                      return true;
+                    }}
+                  />
+                ) : (
+                  <Avatar className="profile-avatar" icon={<UserOutlined />} />
+                )}
               </Popover>
             </div>
           )}
@@ -373,12 +391,20 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                 <BellOutlined className="notification-icon" />
               </Badge>
             </Popover>
-            {/* <Dropdown overlay={profileMenu} trigger={["click"]}>
-              <Avatar className="profile-avatar" icon={<UserOutlined />} />
-            </Dropdown> */}
-
             <Popover content={profileMenu} trigger="click">
-              <Avatar className="profile-avatar" icon={<UserOutlined />} />
+              {profilePhoto ? (
+                <Avatar
+                  className="profile-avatar"
+                  src={profilePhoto}
+                  onError={() => {
+                    // Fallback to icon if image fails to load
+                    setProfilePhoto(null);
+                    return true;
+                  }}
+                />
+              ) : (
+                <Avatar className="profile-avatar" icon={<UserOutlined />} />
+              )}
             </Popover>
           </Footer>
         )}
