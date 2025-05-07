@@ -301,32 +301,33 @@ function FinanceOverview() {
 
   return (
     <div
-      className="finance-overview-main"
-      style={{
-        background: THEME_COLORS.background,
-        minHeight: "100vh",
-        padding: "24px",
-      }}
+      className="finance-overview"
+      style={{ padding: "32px 24px", background: THEME_COLORS.background }}
     >
-      <div className="dashboard-header" style={{ marginBottom: "32px" }}>
+      {/* Header Section */}
+      <div style={{ marginBottom: 32, textAlign: "center" }}>
         <h1
           style={{
-            fontSize: "28px",
-            fontWeight: "600",
+            fontSize: "2.5rem",
             color: THEME_COLORS.dark,
-            marginBottom: "8px",
+            marginBottom: "0.5rem",
           }}
         >
-          Financial Dashboard
+          Financial Overview
         </h1>
-        <p style={{ color: THEME_COLORS.textLight, fontSize: "16px" }}>
-          Track your budgets, expenses and savings all in one place
+        <p
+          style={{
+            color: THEME_COLORS.textLight,
+            fontSize: "1.1rem",
+          }}
+        >
+          Track your expenses, budget, and savings
         </p>
       </div>
 
-      {/* Summary Cards */}
+      {/* Summary Cards Row */}
       <div
-        className="cart-container"
+        className="summary-cards"
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
@@ -334,289 +335,109 @@ function FinanceOverview() {
           marginBottom: "32px",
         }}
       >
+        {/* Budget Card */}
         <div
-          className="budject-cart primary-border"
+          className="summary-card"
           style={{
             background: THEME_COLORS.cardBg,
-            borderRadius: "12px",
+            borderRadius: "16px",
             padding: "24px",
-            boxShadow: `0 8px 16px ${THEME_COLORS.shadow}`,
-            transition: "transform 0.2s ease",
-            ":hover": { transform: "translateY(-5px)" },
+            boxShadow: `0 4px 12px ${THEME_COLORS.shadow}`,
           }}
         >
+          <h3 style={{ color: THEME_COLORS.text, marginBottom: "16px" }}>
+            Total Budget
+          </h3>
           <div
-            className="cart-head"
             style={{
-              marginBottom: "16px",
-              display: "flex",
-              alignItems: "center",
+              fontSize: "2rem",
+              color: THEME_COLORS.primary,
+              marginBottom: "8px",
             }}
           >
-            <div
-              style={{
-                width: "40px",
-                height: "40px",
-                borderRadius: "8px",
-                background: `${THEME_COLORS.primary}15`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginRight: "12px",
-              }}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke={THEME_COLORS.primary}
-                width="24"
-                height="24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-            <span
-              style={{
-                fontSize: "18px",
-                fontWeight: "600",
-                color: THEME_COLORS.dark,
-              }}
-            >
-              Monthly Budget
-            </span>
+            ${totalBudget.toFixed(2)}
           </div>
-          <div
-            className="progress-bar"
+          <button
+            onClick={handleSetBudget}
             style={{
-              display: "flex",
-              alignItems: "center",
-              marginBottom: "16px",
+              background: THEME_COLORS.primary,
+              color: "white",
+              border: "none",
+              padding: "8px 16px",
+              borderRadius: "8px",
+              cursor: "pointer",
             }}
           >
-            <Progress
-              type="circle"
-              percent={100}
-              strokeColor={THEME_COLORS.primary}
-              trailColor={`${THEME_COLORS.primary}20`}
-              size={80}
-              style={{ marginRight: "24px" }}
-            />
-            <div>
-              <p
-                style={{
-                  fontSize: "28px",
-                  fontWeight: "700",
-                  color: THEME_COLORS.dark,
-                  marginBottom: "4px",
-                }}
-              >
-                ${totalBudget.toLocaleString()}
-              </p>
-              <p style={{ fontSize: "14px", color: THEME_COLORS.textLight }}>
-                Total Budget
-              </p>
-            </div>
-          </div>
+            Set Budget
+          </button>
         </div>
 
+        {/* Expenses Card */}
         <div
-          className="budject-cart primary-border"
+          className="summary-card"
           style={{
             background: THEME_COLORS.cardBg,
-            borderRadius: "12px",
+            borderRadius: "16px",
             padding: "24px",
-            boxShadow: `0 8px 16px ${THEME_COLORS.shadow}`,
-            transition: "transform 0.2s ease",
-            ":hover": { transform: "translateY(-5px)" },
+            boxShadow: `0 4px 12px ${THEME_COLORS.shadow}`,
           }}
         >
+          <h3 style={{ color: THEME_COLORS.text, marginBottom: "16px" }}>
+            Total Expenses
+          </h3>
           <div
-            className="cart-head"
             style={{
-              marginBottom: "16px",
-              display: "flex",
-              alignItems: "center",
+              fontSize: "2rem",
+              color: THEME_COLORS.warning,
+              marginBottom: "8px",
             }}
           >
-            <div
-              style={{
-                width: "40px",
-                height: "40px",
-                borderRadius: "8px",
-                background: `${THEME_COLORS.warning}15`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginRight: "12px",
-              }}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke={THEME_COLORS.warning}
-                width="24"
-                height="24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
-                />
-              </svg>
-            </div>
-            <span
-              style={{
-                fontSize: "18px",
-                fontWeight: "600",
-                color: THEME_COLORS.dark,
-              }}
-            >
-              Monthly Expenses
-            </span>
+            ${totalExpense.toFixed(2)}
           </div>
-          <div
-            className="progress-bar"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              marginBottom: "16px",
-            }}
-          >
-            <Progress
-              type="circle"
-              percent={expensePercentage}
-              strokeColor={{
-                "0%": THEME_COLORS.success,
-                "100%":
-                  expensePercentage > 75
-                    ? THEME_COLORS.warning
-                    : THEME_COLORS.primary,
-              }}
-              trailColor={`${THEME_COLORS.primary}20`}
-              size={80}
-              style={{ marginRight: "24px" }}
-            />
-            <div>
-              <p
-                style={{
-                  fontSize: "28px",
-                  fontWeight: "700",
-                  color: THEME_COLORS.dark,
-                  marginBottom: "4px",
-                }}
-              >
-                ${totalExpense.toLocaleString()}
-              </p>
-              <p style={{ fontSize: "14px", color: THEME_COLORS.textLight }}>
-                {expensePercentage.toFixed(1)}% of budget
-              </p>
-            </div>
-          </div>
+          <Progress
+            percent={expensePercentage}
+            status={expensePercentage > 90 ? "exception" : "active"}
+            strokeColor={
+              expensePercentage > 90
+                ? THEME_COLORS.warning
+                : THEME_COLORS.primary
+            }
+          />
         </div>
 
+        {/* Savings Card */}
         <div
-          className="budject-cart primary-border"
+          className="summary-card"
           style={{
             background: THEME_COLORS.cardBg,
-            borderRadius: "12px",
+            borderRadius: "16px",
             padding: "24px",
-            boxShadow: `0 8px 16px ${THEME_COLORS.shadow}`,
-            transition: "transform 0.2s ease",
-            ":hover": { transform: "translateY(-5px)" },
+            boxShadow: `0 4px 12px ${THEME_COLORS.shadow}`,
           }}
         >
+          <h3 style={{ color: THEME_COLORS.text, marginBottom: "16px" }}>
+            Total Savings
+          </h3>
           <div
-            className="cart-head"
             style={{
-              marginBottom: "16px",
-              display: "flex",
-              alignItems: "center",
+              fontSize: "2rem",
+              color: THEME_COLORS.success,
+              marginBottom: "8px",
             }}
           >
-            <div
-              style={{
-                width: "40px",
-                height: "40px",
-                borderRadius: "8px",
-                background: `${THEME_COLORS.success}15`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginRight: "12px",
-              }}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke={THEME_COLORS.success}
-                width="24"
-                height="24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                />
-              </svg>
-            </div>
-            <span
-              style={{
-                fontSize: "18px",
-                fontWeight: "600",
-                color: THEME_COLORS.dark,
-              }}
-            >
-              Savings
-            </span>
+            ${savings.toFixed(2)}
           </div>
-          <div
-            className="progress-bar"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              marginBottom: "16px",
-            }}
-          >
-            <Progress
-              type="circle"
-              percent={savingsPercentage}
-              strokeColor={THEME_COLORS.success}
-              trailColor={`${THEME_COLORS.success}20`}
-              size={80}
-              style={{ marginRight: "24px" }}
-            />
-            <div>
-              <p
-                style={{
-                  fontSize: "28px",
-                  fontWeight: "700",
-                  color: THEME_COLORS.dark,
-                  marginBottom: "4px",
-                }}
-              >
-                ${savings.toLocaleString()}
-              </p>
-              <p style={{ fontSize: "14px", color: THEME_COLORS.textLight }}>
-                {savingsPercentage.toFixed(1)}% of budget
-              </p>
-            </div>
-          </div>
+          <Progress
+            percent={savingsPercentage}
+            status="active"
+            strokeColor={THEME_COLORS.success}
+          />
         </div>
       </div>
 
-      {/* Charts and Analytics */}
+      {/* Charts Grid */}
       <div
-        className="graphs-container"
+        className="charts-grid"
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(500px, 1fr))",
@@ -632,6 +453,7 @@ function FinanceOverview() {
             borderRadius: "12px",
             padding: "24px",
             boxShadow: `0 8px 16px ${THEME_COLORS.shadow}`,
+            minHeight: "500px",
           }}
         >
           <h3
@@ -644,7 +466,7 @@ function FinanceOverview() {
           >
             Expense vs Savings Trends
           </h3>
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={400}>
             <BarChart
               data={monthlyData}
               margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
@@ -698,6 +520,7 @@ function FinanceOverview() {
             borderRadius: "12px",
             padding: "24px",
             boxShadow: `0 8px 16px ${THEME_COLORS.shadow}`,
+            minHeight: "500px",
           }}
         >
           <h3
@@ -710,7 +533,7 @@ function FinanceOverview() {
           >
             Monthly Expense Trend
           </h3>
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={400}>
             <LineChart
               data={monthlyData}
               margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
@@ -777,6 +600,7 @@ function FinanceOverview() {
             borderRadius: "12px",
             padding: "24px",
             boxShadow: `0 8px 16px ${THEME_COLORS.shadow}`,
+            minHeight: "500px",
           }}
         >
           <h3
@@ -789,14 +613,12 @@ function FinanceOverview() {
           >
             Expense by Category
           </h3>
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={400}>
             <PieChart>
               <Pie
                 data={pieData}
-                cx="50%"
-                cy="50%"
                 labelLine={false}
-                outerRadius={100}
+                outerRadius={150}
                 innerRadius={60}
                 paddingAngle={2}
                 dataKey="value"
@@ -1189,113 +1011,81 @@ function FinanceOverview() {
         </div>
       </div>
 
-      {/* Budget Popup */}
+      {/* Budget Setting Popup */}
       {showBudgetPopup && (
         <div
           style={{
             position: "fixed",
-            inset: "0",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(0, 0, 0, 0.5)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            background: "rgba(0,0,0,0.5)",
-            zIndex: "9999",
+            zIndex: 1000,
           }}
         >
           <div
             style={{
               background: THEME_COLORS.cardBg,
               padding: "32px",
-              borderRadius: "12px",
-              boxShadow: `0 16px 32px ${THEME_COLORS.shadow}`,
+              borderRadius: "16px",
               width: "100%",
               maxWidth: "400px",
-              animation: "fadeIn 0.3s ease-in-out",
             }}
           >
-            <h2
-              style={{
-                fontSize: "22px",
-                fontWeight: "600",
-                color: THEME_COLORS.dark,
-                marginBottom: "24px",
-                textAlign: "center",
-              }}
-            >
+            <h2 style={{ marginBottom: "24px", color: THEME_COLORS.text }}>
               Set Monthly Budget
             </h2>
             <form onSubmit={handleBudgetSubmit}>
               <input
                 type="number"
                 id="budgetInput"
-                placeholder="Enter your monthly budget"
+                placeholder="Enter budget amount"
                 style={{
                   width: "100%",
-                  padding: "12px 16px",
+                  padding: "12px",
+                  marginBottom: "16px",
                   borderRadius: "8px",
                   border: `1px solid ${THEME_COLORS.border}`,
-                  marginBottom: "24px",
-                  fontSize: "16px",
                 }}
-                required
               />
-              <button
-                type="submit"
-                style={{
-                  width: "100%",
-                  background: THEME_COLORS.primary,
-                  color: "white",
-                  border: "none",
-                  padding: "12px 16px",
-                  borderRadius: "8px",
-                  fontWeight: "500",
-                  cursor: "pointer",
-                  marginBottom: "12px",
-                }}
-              >
-                Save Budget
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowBudgetPopup(false)}
-                style={{
-                  width: "100%",
-                  background: THEME_COLORS.light,
-                  color: THEME_COLORS.text,
-                  border: `1px solid ${THEME_COLORS.border}`,
-                  padding: "12px 16px",
-                  borderRadius: "8px",
-                  fontWeight: "500",
-                  cursor: "pointer",
-                }}
-              >
-                Cancel
-              </button>
+              <div style={{ display: "flex", gap: "12px" }}>
+                <button
+                  type="submit"
+                  style={{
+                    background: THEME_COLORS.primary,
+                    color: "white",
+                    border: "none",
+                    padding: "12px 24px",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    flex: 1,
+                  }}
+                >
+                  Save
+                </button>
+                <button
+                  onClick={() => setShowBudgetPopup(false)}
+                  style={{
+                    background: THEME_COLORS.textLight,
+                    color: "white",
+                    border: "none",
+                    padding: "12px 24px",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    flex: 1,
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
             </form>
           </div>
         </div>
       )}
-
-      {/* Custom CSS for animations */}
-      <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .chart-container:hover,
-        .analytics-summary:hover,
-        .budject-cart:hover {
-          transform: translateY(-5px);
-          transition: transform 0.3s ease;
-        }
-      `}</style>
     </div>
   );
 }
