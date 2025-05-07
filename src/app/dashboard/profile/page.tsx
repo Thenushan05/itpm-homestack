@@ -170,17 +170,14 @@ const Profile: React.FC = () => {
   } | null>(null);
 
   // Function to handle confirmation and removal
-  const handleConfirm = async (memberId?: string, memberName?: string) => {
-    console.log("Confirm button clicked");
+  const handleConfirm = async () => {
+    // This function is now only called from the Modal's onOk handler
+    console.log("Modal confirm button clicked");
 
-    // Use either passed parameters or stored state
-    const idToRemove = memberId || memberToRemove?.id;
-    const nameToRemove = memberName || memberToRemove?.name;
-
-    console.log("Member to remove:", idToRemove, nameToRemove);
-
-    if (!idToRemove || !nameToRemove) {
-      console.error("No member ID or name available for removal");
+    if (!memberToRemove || !memberToRemove.id) {
+      console.error("No member info available for removal");
+      showToast("Error: No member information available", "error");
+      setConfirmVisible(false);
       return;
     }
 
@@ -190,20 +187,24 @@ const Profile: React.FC = () => {
       const token = localStorage.getItem("token");
       if (!token) {
         showToast("You are not authenticated. Please login again.", "error");
+        setConfirmVisible(false);
         return;
       }
 
-      console.log("Sending delete request for member ID:", idToRemove);
+      console.log("Sending delete request for member ID:", memberToRemove.id);
 
       await axios.delete(
-        `http://localhost:5000/api/user/remove-member/${idToRemove}`,
+        `http://localhost:5000/api/user/remove-member/${memberToRemove.id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
 
       // Show success toast message
-      showToast(`${nameToRemove} has been removed from your home.`, "success");
+      showToast(
+        `${memberToRemove.name} has been removed from your home.`,
+        "success"
+      );
 
       // Force refresh the component to update the UI
       fetchUserData();
@@ -629,24 +630,91 @@ const Profile: React.FC = () => {
 
       {/* Custom Confirmation Dialog */}
       <Modal
-        title="Remove Family Member"
+        title={
+          <div style={{ color: "#ff4d4f", fontWeight: 600 }}>
+            Remove Family Member
+          </div>
+        }
         open={confirmVisible}
-        onOk={() => handleConfirm()}
+        onOk={handleConfirm}
         onCancel={() => {
-          console.log("Cancel clicked");
-          setConfirmVisible(false);
+          if (!updating) {
+            console.log("Cancel clicked");
+            setConfirmVisible(false);
+            setMemberToRemove(null);
+          }
         }}
         okText="Yes, Remove"
-        cancelText="No, Cancel"
-        okButtonProps={{ danger: true }}
+        cancelText="Cancel"
+        okButtonProps={{
+          danger: true,
+          style: { fontWeight: 500 },
+          loading: updating,
+        }}
+        cancelButtonProps={{
+          disabled: updating,
+        }}
+        closable={!updating}
+        maskClosable={!updating}
+        centered
+        destroyOnClose
+        width={400}
+        bodyStyle={{ padding: "20px" }}
       >
-        {memberToRemove ? (
-          <p>
-            Are you sure you want to remove {memberToRemove.name} from your
-            home? This action cannot be undone.
-          </p>
-        ) : (
-          <p>Loading...</p>
+        {memberToRemove && (
+          <div>
+            <div
+              style={{
+                marginBottom: "16px",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              {updating ? (
+                <div
+                  style={{
+                    color: "#ff4d4f",
+                    fontSize: "22px",
+                    marginRight: "10px",
+                    width: "22px",
+                    textAlign: "center",
+                  }}
+                >
+                  <span className="ant-loading-icon">
+                    <span className="ant-loading-dot"></span>
+                    <span className="ant-loading-dot"></span>
+                    <span className="ant-loading-dot"></span>
+                    <span className="ant-loading-dot"></span>
+                  </span>
+                </div>
+              ) : (
+                <DeleteOutlined
+                  style={{
+                    color: "#ff4d4f",
+                    fontSize: "22px",
+                    marginRight: "10px",
+                  }}
+                />
+              )}
+              <span style={{ fontSize: "16px" }}>
+                {updating ? (
+                  <span>
+                    Removing <strong>{memberToRemove.name}</strong>...
+                  </span>
+                ) : (
+                  <span>
+                    Are you sure you want to remove{" "}
+                    <strong>{memberToRemove.name}</strong> from your home?
+                  </span>
+                )}
+              </span>
+            </div>
+            <p style={{ color: "#8c8c8c", marginBottom: 0 }}>
+              {updating
+                ? "This may take a moment..."
+                : "This action cannot be undone. The user will lose all access to your home."}
+            </p>
+          </div>
         )}
       </Modal>
 
@@ -1175,31 +1243,18 @@ const Profile: React.FC = () => {
                                       // Stop event propagation if that's an issue
                                       e.stopPropagation();
 
-                                      // Add more explicit logging
                                       console.log("Remove button clicked!");
                                       console.log(
                                         `For member: ${user.firstName} ${user.lastName}`
                                       );
                                       console.log(`With ID: ${familyMemberId}`);
 
-                                      // Add a direct toast for debugging
-                                      showToast(
-                                        `Remove button clicked for ${user.firstName}`,
-                                        "success"
-                                      );
-
-                                      // Try a simpler approach with direct window.confirm
-                                      const isConfirmed = window.confirm(
-                                        `Are you sure you want to remove ${user.firstName} ${user.lastName} from your home?`
-                                      );
-
-                                      if (isConfirmed) {
-                                        // Call handleConfirm directly with the parameters
-                                        handleConfirm(
-                                          familyMemberId!,
-                                          `${user.firstName} ${user.lastName}`
-                                        );
-                                      }
+                                      // Set member to remove and show the modal
+                                      setMemberToRemove({
+                                        id: familyMemberId!,
+                                        name: `${user.firstName} ${user.lastName}`,
+                                      });
+                                      setConfirmVisible(true);
                                     }}
                                     style={{
                                       width: "100%",
