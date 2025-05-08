@@ -12,16 +12,7 @@ import {
   Legend,
   ArcElement,
 } from "chart.js";
-import {
-  Card,
-  Row,
-  Col,
-  Button,
-  Empty,
-  Progress,
-  Typography,
-  Space,
-} from "antd";
+import { Card, Row, Col, Button, Typography, Space } from "antd";
 import {
   PlusOutlined,
   DeleteOutlined,
@@ -61,6 +52,8 @@ const WasteManagement: React.FC = () => {
       amount: number;
       unit: string;
       isRecyclable: boolean;
+      originalAmount?: number;
+      originalUnit?: string;
     }>
   >([]); // State to hold waste details
   const maxWaste = 150; // Max waste for full height
@@ -98,9 +91,31 @@ const WasteManagement: React.FC = () => {
     });
   };
 
+  // Add this helper function for unit conversion
+  const convertToDisplayUnit = (amount: number, unit: string) => {
+    if (unit === "g") {
+      return amount * 1000; // Convert kg back to g for display
+    }
+    return amount;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Convert amount to kg if unit is in grams
+      const convertedAmount =
+        formData.unit === "g"
+          ? parseFloat(formData.amount) / 1000
+          : parseFloat(formData.amount);
+
+      const dataToSubmit = {
+        ...formData,
+        amount: convertedAmount,
+        originalAmount: parseFloat(formData.amount), // Store original amount
+        originalUnit: formData.unit, // Store original unit
+        unit: "kg", // Always store as kg in backend
+      };
+
       if (editingIndex !== null) {
         // Update existing record
         const wasteToUpdate = wasteDetails[editingIndex];
@@ -111,7 +126,7 @@ const WasteManagement: React.FC = () => {
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify(formData),
+            body: JSON.stringify(dataToSubmit),
           }
         );
         if (response.ok) {
@@ -128,7 +143,7 @@ const WasteManagement: React.FC = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(dataToSubmit),
         });
         const data = await response.json();
         console.log("API Response:", data);
@@ -142,10 +157,10 @@ const WasteManagement: React.FC = () => {
         unit: "",
         isRecyclable: false,
       });
-      setShowForm(false); // Hide the form after submission
-      setTimeout(() => setToastMessage(""), 3000); // Clear toast message after 3 seconds
-      fetchWasteDetails(); // Fetch updated waste details
-      setEditingIndex(null); // Reset editing index
+      setShowForm(false);
+      setTimeout(() => setToastMessage(""), 3000);
+      fetchWasteDetails();
+      setEditingIndex(null);
     } catch (error) {
       console.error("Error saving waste details:", error);
     }
@@ -238,14 +253,17 @@ const WasteManagement: React.FC = () => {
 
   const handleEdit = (index: number) => {
     const wasteToEdit = wasteDetails[index];
+    const displayAmount = wasteToEdit.originalAmount || wasteToEdit.amount;
+    const displayUnit = wasteToEdit.originalUnit || wasteToEdit.unit;
+
     setFormData({
       name: wasteToEdit.name,
       category: wasteToEdit.category,
-      amount: wasteToEdit.amount.toString(),
-      unit: wasteToEdit.unit,
+      amount: displayAmount.toString(),
+      unit: displayUnit,
       isRecyclable: wasteToEdit.isRecyclable,
     });
-    setEditingIndex(index); // Set the editing index
+    setEditingIndex(index);
     setShowForm(true);
   };
 
@@ -555,7 +573,12 @@ const WasteManagement: React.FC = () => {
                   >
                     <div>
                       <strong>{waste.name}</strong> - {waste.category} -{" "}
-                      {waste.amount} {waste.unit} -{" "}
+                      {waste.originalAmount ||
+                        convertToDisplayUnit(
+                          waste.amount,
+                          waste.originalUnit || waste.unit
+                        )}{" "}
+                      {waste.originalUnit || waste.unit} -{" "}
                       {waste.isRecyclable ? "Recyclable" : "Not Recyclable"}
                     </div>
                     <Space>
