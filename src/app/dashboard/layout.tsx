@@ -19,6 +19,7 @@ import {
   SunOutlined,
   MoonOutlined,
   AppstoreOutlined,
+  MessageOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -152,29 +153,22 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       ],
     },
     {
-      key: "shopping",
+      key: "3d-viewer",
+      icon: <AppstoreOutlined />,
+      label: (
+        <Link href="/dashboard/3d-viewer" prefetch={true}>
+          3D Home Viewer
+        </Link>
+      ),
+    },
+    {
+      key: "/dashboard/shoppingList",
       icon: <ShoppingOutlined />,
-      label: "Shopping List",
-      children: [
-        {
-          key: "/dashboard/shoppingList",
-          icon: <ShoppingCartOutlined />,
-          label: (
-            <Link href="/dashboard/shoppingList" prefetch={true}>
-              Current List
-            </Link>
-          ),
-        },
-        {
-          key: "/dashboard/shoppingList/history",
-          icon: <ShoppingCartOutlined />,
-          label: (
-            <Link href="/dashboard/shoppingList/history" prefetch={true}>
-              Purchase History
-            </Link>
-          ),
-        },
-      ],
+      label: (
+        <Link href="/dashboard/shoppingList" prefetch={true}>
+          Shopping List
+        </Link>
+      ),
     },
     {
       key: "4",
@@ -207,6 +201,11 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       key: "7",
       icon: <ShoppingCartOutlined />,
       label: <Link href="/dashboard/mealPlan">Meal Plan</Link>,
+    },
+    {
+      key: "8",
+      icon: <MessageOutlined />,
+      label: <Link href="/dashboard/chat">Family Chat</Link>,
     },
   ];
 

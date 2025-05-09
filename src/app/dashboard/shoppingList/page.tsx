@@ -1,43 +1,80 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import "regenerator-runtime/runtime";
 import "../shoppingList/shoppinglist.sass";
 import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
-import { PlusCircleFilled } from "@ant-design/icons";
-import { FaEdit, FaMicrophone, FaRegStopCircle, FaTrash } from "react-icons/fa";
-import { HiRefresh } from "react-icons/hi";
-import { Empty, Modal, Input, Button, Select, Pagination } from "antd";
+import {
+  PlusOutlined,
+  SearchOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  PrinterOutlined,
+  AudioOutlined,
+  StopOutlined,
+  ReloadOutlined,
+  ShoppingCartOutlined,
+} from "@ant-design/icons";
+import {
+  Empty,
+  Modal,
+  Input,
+  Button,
+  Select,
+  Pagination,
+  Card,
+  Typography,
+  Tag,
+  Space,
+  Tooltip,
+  Alert,
+  Layout,
+  theme,
+  Popconfirm,
+  Avatar,
+} from "antd";
 import { jsPDF } from "jspdf";
-import { AiOutlineStop } from "react-icons/ai";
-import { MdInventory, MdOutlineProductionQuantityLimits } from "react-icons/md";
-import { IoMdPrint } from "react-icons/io";
+import { MdInventory } from "react-icons/md";
 
-interface Additem {
+const { Title, Text } = Typography;
+const { Header, Content } = Layout;
+const { Option } = Select;
+
+interface ShoppingItem {
+  _id: string;
+  userId: UserData;
   itemName: string;
   count: string;
   price?: number;
   purchaseDate: string;
-  fullName?: string;
-  homeName?: string;
+  fullName: string;
+  homeName: string;
   category: string;
 }
+interface UserData {
+  _id: string;
+  id?: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  homeName: string;
+  role: string;
+  profilePhoto?: string; // URL to the profile photo
+}
+
+const categories = [
+  { value: "groceries", label: "Groceries", color: "green" },
+  { value: "household", label: "Household", color: "blue" },
+  { value: "electronics", label: "Electronics", color: "purple" },
+  { value: "clothing", label: "Clothing", color: "pink" },
+  { value: "other", label: "Other", color: "orange" },
+];
+
 const App: React.FC = () => {
-  const [items, setItems] = useState<
-    {
-      _id: string;
-      userId: string;
-      itemName: string;
-      count: string;
-      price?: number;
-      purchaseDate: string;
-      fullName: string;
-      homeName: string;
-      category: string;
-    }[]
-  >([]);
+  const { token } = theme.useToken();
+  const [items, setItems] = useState<ShoppingItem[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const { transcript, resetTranscript } = useSpeechRecognition();
@@ -51,15 +88,18 @@ const App: React.FC = () => {
   const [editPrice, setEditPrice] = useState<string>("");
   const [micStatus, setMicStatus] = useState("mic");
   const [error, setError] = useState<string>("");
-  // const userId = "USER_ID_HERE"; // Replace with dynamic user ID retrieval
-  const itemsPerPage = 10;
-  const [isModalVisible, setIsModalVisible] = useState(false); // New state for modal visibility
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const [home, setHome] = useState("");
-  const [userId, setUserId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState<string>("date");
+  const [loading, setLoading] = useState(false);
+  const itemsPerPage = 10;
+  const [userId, setUserId] = useState<string | null>(null);
 
   const fetchItems = async () => {
     try {
+      setLoading(true);
       const token = localStorage.getItem("token");
       if (!token) {
         setError("Token not found.");
@@ -67,8 +107,7 @@ const App: React.FC = () => {
       }
 
       const decodedToken = JSON.parse(atob(token.split(".")[1]));
-      const userIdFromToken = decodedToken.id; // Extract userId from token
-      console.log("User ID from token:", userIdFromToken); // Debug log
+      const userIdFromToken = decodedToken.id;
 
       const response1 = await axios.get(
         `http://localhost:5000/api/user/${userIdFromToken}`,
@@ -76,7 +115,7 @@ const App: React.FC = () => {
       );
 
       setHome(response1.data.homeName || "");
-      setUserId(userIdFromToken); // Set state for userId
+      setUserId(userIdFromToken);
 
       const response = await axios.get(
         `http://localhost:5000/api/purchases/home/${response1.data.homeName}`,
@@ -86,23 +125,18 @@ const App: React.FC = () => {
         }
       );
 
-      // const response = await axios.get(
-      //   `http://localhost:5000/api/purchases/home/${response1.data.homeName}`,
-      //   {
-      //     headers: { Authorization: `Bearer ${token}` },
-      //     params: { year: 2024, month: 10 },
-      //   }
-      // );
-
       if (!response.data.purchases) {
         setItems([]);
       } else {
         setItems(response.data.purchases);
-
         setTotalItems(response.data.totalItems);
       }
-    } catch (err) {
-      setError("Failed to fetch items.");
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "Failed to fetch items."
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -112,6 +146,7 @@ const App: React.FC = () => {
 
   const deleteAllPurchases = async () => {
     try {
+      setLoading(true);
       if (!home) {
         setError("Home name not found.");
         return;
@@ -133,13 +168,17 @@ const App: React.FC = () => {
       );
 
       if (response.data) {
-        setItems([]); // Clear the shopping list
+        setItems([]);
         setTotalItems(0);
         setError("");
         alert("All purchases deleted successfully.");
       }
-    } catch (err) {
-      setError("Failed to delete purchases.");
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "Failed to delete purchases."
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -173,7 +212,7 @@ const App: React.FC = () => {
       return;
     }
 
-    const newItem: Additem = {
+    const newItem: ShoppingItem = {
       itemName: itemToAdd,
       count: manualCount,
       price: manualPrice ? parseFloat(manualPrice) : undefined,
@@ -214,7 +253,7 @@ const App: React.FC = () => {
     }
   };
 
-  const startEditing = (item: any) => {
+  const startEditing = (item: ShoppingItem) => {
     setEditingIndex(item._id);
     setEditText(item.itemName);
     setEditCount(item.count.toString());
@@ -393,227 +432,462 @@ const App: React.FC = () => {
   };
 
   const showModal = () => {
-    setIsModalVisible(true); // Show the modal
+    setIsModalVisible(true);
   };
 
   const handleOk = () => {
     printPDF();
-    setIsModalVisible(false); // Close the modal after downloading the PDF
+    setIsModalVisible(false);
   };
 
   const handleCancel = () => {
-    setIsModalVisible(false); // Close the modal if cancel is clicked
+    setIsModalVisible(false);
   };
 
-  const currentItems = items.filter((item) =>
-    item.itemName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredAndSortedItems = useMemo(() => {
+    let result = [...items];
+
+    if (searchQuery) {
+      result = result.filter((item) =>
+        item.itemName.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    if (selectedCategories.length > 0) {
+      result = result.filter((item) =>
+        selectedCategories.includes(item.category)
+      );
+    }
+
+    switch (sortBy) {
+      case "date":
+        result.sort(
+          (a, b) =>
+            new Date(b.purchaseDate).getTime() -
+            new Date(a.purchaseDate).getTime()
+        );
+        break;
+      case "name":
+        result.sort((a, b) => a.itemName.localeCompare(b.itemName));
+        break;
+      case "price":
+        result.sort((a, b) => (b.price || 0) - (a.price || 0));
+        break;
+    }
+
+    return result;
+  }, [items, searchQuery, selectedCategories, sortBy]);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
-  const { Option } = Select;
+  const getAvatarUrl = (name: string) => {
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      name
+    )}&background=random&color=fff&size=40&bold=true`;
+  };
 
   return (
-    <div className="container primary-bg primary-border">
-      <h1 className="title primary-txt">🛒 Shopping List</h1>
-      {error && <p className="error-message">{error}</p>}
-      <div className="group-container">
-        <div className="add-item-container">
-          <div className="heading-container">
-            <span>Add Item</span>
-          </div>
-          <div className="add-item-container-main">
-            <div className="text-container">
-              <span>Item Name</span>
-            </div>
-            <div className="input-container">
-              <input
-                type="text"
-                value={manualInput || transcript}
-                onChange={(e) => setManualInput(e.target.value)}
-                placeholder="Type or speak to add an item..."
-                className="manual-input"
-              />
-              <button className="mic-button" onClick={toggleListening}>
-                {micStatus === "mic" ? (
-                  <FaMicrophone className="mic-icon" />
-                ) : micStatus === "stop" ? (
-                  <FaRegStopCircle />
-                ) : (
-                  <HiRefresh />
-                )}
-              </button>
-            </div>
-            <div className="count-category-container">
-              <div className="text-container">
-                <span>Qantity</span>
-              </div>
-              <input
-                type="string"
-                min="1"
-                value={manualCount}
-                onChange={(e) => setManualCount(e.target.value)}
-                className="count-input"
-                placeholder="Count"
-              />
-            </div>
-            <div className="category-select-container">
-              <div className="text-container">
-                <span>Category</span>
-              </div>
-              <div className="category-select">
+    <Layout className="min-h-screen bg-gray-50">
+      <Header className="bg-white shadow-sm px-6 flex items-center justify-between sticky top-0 z-50">
+        <div className="flex items-center">
+          <ShoppingCartOutlined className="text-2xl text-blue-500 mr-3" />
+          <Title level={4} className="!m-0 !text-gray-800">
+            Shopping List
+          </Title>
+        </div>
+        <Space>
+          <Button
+            icon={<PrinterOutlined />}
+            onClick={printPDF}
+            type="default"
+            className="hover:bg-gray-50"
+          >
+            Export PDF
+          </Button>
+          <Popconfirm
+            title="Clear All Items"
+            description="Are you sure you want to delete all items? This action cannot be undone."
+            onConfirm={deleteAllPurchases}
+            okText="Yes"
+            cancelText="No"
+            placement="bottomRight"
+          >
+            <Button
+              icon={<DeleteOutlined />}
+              danger
+              className="hover:opacity-90"
+            >
+              Clear All
+            </Button>
+          </Popconfirm>
+        </Space>
+      </Header>
+
+      <Content className="p-6">
+        <div className="max-w-6xl mx-auto space-y-6">
+          <Card className="shadow-sm hover:shadow-md transition-shadow duration-200">
+            <div className="flex flex-col space-y-4">
+              <div className="flex items-center space-x-4">
+                <Input
+                  placeholder="Add new item..."
+                  value={manualInput || transcript}
+                  onChange={(e) => setManualInput(e.target.value)}
+                  className="flex-1"
+                  size="large"
+                  prefix={<ShoppingCartOutlined className="text-blue-400" />}
+                />
+                <Input
+                  type="number"
+                  placeholder="Quantity"
+                  value={manualCount}
+                  onChange={(e) => setManualCount(e.target.value)}
+                  style={{ width: 100 }}
+                  size="large"
+                />
+                <Input
+                  type="number"
+                  placeholder="Price"
+                  value={manualPrice}
+                  onChange={(e) => setManualPrice(e.target.value)}
+                  prefix="$"
+                  style={{ width: 120 }}
+                  size="large"
+                />
                 <Select
-                  className="category-select"
-                  defaultValue="Select Category"
-                  style={{ width: "100%", height: "40px" }}
-                  onChange={(e) => setManualCategory(e)}
+                  placeholder="Category"
+                  value={manualCategory}
+                  onChange={setManualCategory}
+                  style={{ width: 150 }}
+                  size="large"
                 >
-                  <Option value="entertainment">entertainment</Option>
-                  <Option value="clothing">clothing</Option>
-                  <Option value="other">other</Option>
+                  {categories.map((cat) => (
+                    <Option key={cat.value} value={cat.value}>
+                      <Tag color={cat.color}>{cat.label}</Tag>
+                    </Option>
+                  ))}
                 </Select>
               </div>
-            </div>
-            <button onClick={addToList} className="manual-add">
-              <PlusCircleFilled /> Add to List
-            </button>
-          </div>
-        </div>
 
-        <div className="list-container">
-          <div className="search-print-container">
-            <button onClick={deleteAllPurchases} className="delete-all-button">
-              <FaTrash /> Delete All
-            </button>
-
-            <button onClick={showModal} className="print-pdf-button">
-              <IoMdPrint /> Print PDF
-            </button>
-          </div>
-          <Input
-            type="text"
-            placeholder="Search items..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-bar"
-          />
-          {currentItems.length === 0 ? (
-            <>
-              <Empty /> Your list is empty.
-            </>
-          ) : (
-            currentItems.map((item) => (
-              <div className="list-container-sub" key={item._id}>
-                <div className="item-inner">
-                  <div className="item-name-category">
-                    <div className="item-name">
-                      {item.itemName}
-                      <div
-                        className={
-                          "category " + "bg-" + item.category.toLowerCase()
-                        }
-                      >
-                        {" "}
-                        {item.category}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="item-name-user">
-                    <div className="count"> Qty:{item.count}</div>
-                    <div className="name"> {item.fullName}</div>
-                    <div className="date">
-                      {new Date(item.purchaseDate).toLocaleDateString()}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="buttons-container">
-                  {item.userId === userId ? (
-                    <>
-                      <button
-                        className="deletebtn"
-                        onClick={() => deleteItem(item._id)}
-                      >
-                        <FaTrash className="delete-btn" />
-                      </button>
-                      <button
-                        className="editbtn"
-                        onClick={() => startEditing(item)}
-                      >
-                        <FaEdit />
-                      </button>
-                    </>
-                  ) : (
-                    <Button className="disabled" disabled>
-                      <AiOutlineStop />
+              <div className="flex items-center justify-between">
+                <Space>
+                  <Tooltip
+                    title={
+                      micStatus === "mic"
+                        ? "Start Recording"
+                        : micStatus === "stop"
+                        ? "Stop Recording"
+                        : "Reset"
+                    }
+                  >
+                    <Button
+                      icon={
+                        micStatus === "mic" ? (
+                          <AudioOutlined />
+                        ) : micStatus === "stop" ? (
+                          <StopOutlined />
+                        ) : (
+                          <ReloadOutlined />
+                        )
+                      }
+                      onClick={toggleListening}
+                      type={micStatus === "stop" ? "primary" : "default"}
+                      size="large"
+                      className={
+                        micStatus === "stop"
+                          ? "bg-blue-500 hover:bg-blue-600"
+                          : ""
+                      }
+                    >
+                      {micStatus === "mic"
+                        ? "Start Voice Input"
+                        : micStatus === "stop"
+                        ? "Stop"
+                        : "Reset"}
                     </Button>
-                  )}
+                  </Tooltip>
+                </Space>
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={addToList}
+                  size="large"
+                  className="bg-blue-500 hover:bg-blue-600"
+                >
+                  Add Item
+                </Button>
+              </div>
+
+              {error && (
+                <Alert type="error" message={error} showIcon closable />
+              )}
+            </div>
+          </Card>
+
+          <Card className="shadow-sm hover:shadow-md transition-shadow duration-200">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <Input
+                placeholder="Search items..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                prefix={<SearchOutlined className="text-gray-400" />}
+                style={{ width: 300 }}
+                size="large"
+                allowClear
+              />
+              <Space size="large">
+                <Select
+                  placeholder="Sort by"
+                  style={{ width: 150 }}
+                  defaultValue="date"
+                  size="large"
+                >
+                  <Option value="date">Date Added</Option>
+                  <Option value="name">Name</Option>
+                  <Option value="price">Price</Option>
+                </Select>
+                <Select
+                  placeholder="Filter Category"
+                  style={{ width: 200 }}
+                  mode="multiple"
+                  size="large"
+                  maxTagCount={2}
+                >
+                  {categories.map((cat) => (
+                    <Option key={cat.value} value={cat.value}>
+                      <Tag color={cat.color}>{cat.label}</Tag>
+                    </Option>
+                  ))}
+                </Select>
+              </Space>
+            </div>
+          </Card>
+
+          <Card
+            className="shadow-sm hover:shadow-md transition-shadow duration-200"
+            loading={loading}
+          >
+            {filteredAndSortedItems.length > 0 ? (
+              <div className="space-y-4">
+                {filteredAndSortedItems.map((item) => (
+                  <div
+                    key={item._id}
+                    className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all duration-200"
+                  >
+                    {editingIndex === item._id ? (
+                      <div className="flex-1 flex items-center space-x-4">
+                        <Input
+                          value={editText}
+                          onChange={(e) => setEditText(e.target.value)}
+                          className="flex-1"
+                          size="large"
+                        />
+                        <Input
+                          type="number"
+                          value={editCount}
+                          onChange={(e) => setEditCount(e.target.value)}
+                          style={{ width: 100 }}
+                          size="large"
+                        />
+                        <Input
+                          type="number"
+                          value={editPrice}
+                          onChange={(e) => setEditPrice(e.target.value)}
+                          prefix="$"
+                          style={{ width: 120 }}
+                          size="large"
+                        />
+                        <Space>
+                          <Button
+                            type="primary"
+                            onClick={saveEdit}
+                            size="large"
+                          >
+                            Save
+                          </Button>
+                          <Button
+                            onClick={() => setEditingIndex(null)}
+                            size="large"
+                          >
+                            Cancel
+                          </Button>
+                        </Space>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3">
+                            <Avatar
+                              size={40}
+                              src={`http://localhost:5000${item.userId.profilePhoto}`}
+                              style={{
+                                backgroundColor: item.fullName
+                                  ? undefined
+                                  : "#1890ff",
+                                verticalAlign: "middle",
+                              }}
+                              className="flex-shrink-0 border-2 border-blue-100"
+                            >
+                              {item.fullName
+                                ? item.fullName[0].toUpperCase()
+                                : "?"}
+                            </Avatar>
+                            <div className="min-w-0 flex-1">
+                              <Text strong className="text-lg block truncate">
+                                {item.itemName}
+                              </Text>
+                              <div className="flex items-center space-x-2 mt-1">
+                                <Text type="secondary" className="text-sm">
+                                  Added by {item.fullName || "Unknown User"}
+                                </Text>
+                                <Tag
+                                  color={
+                                    categories.find(
+                                      (cat) => cat.value === item.category
+                                    )?.color || "default"
+                                  }
+                                  className="px-3 py-1"
+                                >
+                                  {item.category || "Uncategorized"}
+                                </Tag>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-sm text-gray-500 mt-2 space-x-4 ml-12">
+                            <span className="inline-flex items-center">
+                              <span className="mr-1">📦</span> Quantity:{" "}
+                              {item.count}
+                            </span>
+                            {item.price && (
+                              <span className="inline-flex items-center">
+                                <span className="mr-1">💰</span> Price: $
+                                {item.price}
+                              </span>
+                            )}
+                            <span className="inline-flex items-center">
+                              <span className="mr-1">📅</span> Added:{" "}
+                              {new Date(item.purchaseDate).toLocaleDateString()}
+                            </span>
+                            <span className="inline-flex items-center">
+                              <span className="mr-1">🏠</span> Home:{" "}
+                              {item.homeName}
+                            </span>
+                          </div>
+                        </div>
+                        <Space size="middle">
+                          <Button
+                            type="primary"
+                            icon={<EditOutlined />}
+                            onClick={() => startEditing(item)}
+                            className="hover:opacity-90"
+                          >
+                            Edit
+                          </Button>
+                          <Popconfirm
+                            title="Delete item"
+                            description="Are you sure you want to delete this item?"
+                            onConfirm={() => deleteItem(item._id)}
+                            okText="Yes"
+                            cancelText="No"
+                            placement="left"
+                          >
+                            <Button
+                              type="primary"
+                              danger
+                              icon={<DeleteOutlined />}
+                              className="hover:opacity-90"
+                            >
+                              Delete
+                            </Button>
+                          </Popconfirm>
+                        </Space>
+                      </>
+                    )}
+                  </div>
+                ))}
+                <div className="flex justify-center mt-6">
+                  <Pagination
+                    current={currentPage}
+                    total={totalItems}
+                    pageSize={itemsPerPage}
+                    onChange={paginate}
+                    showSizeChanger={false}
+                    className="hover:shadow-sm transition-shadow"
+                  />
                 </div>
               </div>
-            ))
-          )}
+            ) : (
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description={
+                  <Text type="secondary" className="text-lg">
+                    No items in your shopping list
+                  </Text>
+                }
+              >
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={showModal}
+                  size="large"
+                  className="mt-4"
+                >
+                  Add Your First Item
+                </Button>
+              </Empty>
+            )}
+          </Card>
         </div>
-      </div>
-      {/* Print PDF Button */}
+      </Content>
 
-      {/* Modal for PDF download confirmation */}
       <Modal
-        title="Download PDF"
+        title={<Text strong>Add New Item</Text>}
         open={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}
-        okText="Download"
-        cancelText="Cancel"
+        width={600}
+        className="rounded-lg"
       >
-        <p>Are you sure you want to download the shopping list as a PDF?</p>
+        <div className="space-y-4 py-4">
+          <Input
+            placeholder="Item name"
+            value={manualInput}
+            onChange={(e) => setManualInput(e.target.value)}
+            size="large"
+          />
+          <Input
+            type="number"
+            placeholder="Quantity"
+            value={manualCount}
+            onChange={(e) => setManualCount(e.target.value)}
+            size="large"
+          />
+          <Input
+            type="number"
+            placeholder="Price (optional)"
+            value={manualPrice}
+            onChange={(e) => setManualPrice(e.target.value)}
+            prefix="$"
+            size="large"
+          />
+          <Select
+            placeholder="Select category"
+            value={manualCategory}
+            onChange={setManualCategory}
+            style={{ width: "100%" }}
+            size="large"
+          >
+            {categories.map((cat) => (
+              <Option key={cat.value} value={cat.value}>
+                <Tag color={cat.color}>{cat.label}</Tag>
+              </Option>
+            ))}
+          </Select>
+        </div>
       </Modal>
-
-      {/* Edit Modal */}
-      <Modal
-        title="Edit Item"
-        open={editingIndex !== null}
-        onCancel={closeModal}
-        footer={[
-          <Button key="cancel" onClick={closeModal}>
-            Cancel
-          </Button>,
-          <Button key="save" type="primary" onClick={saveEdit}>
-            Save Changes
-          </Button>,
-        ]}
-      >
-        <Input
-          value={editText}
-          onChange={(e) => setEditText(e.target.value)}
-          placeholder="Item Name"
-        />
-        <Input
-          type="number"
-          min="1"
-          value={editCount}
-          onChange={(e) => setEditCount(e.target.value)}
-          placeholder="Count"
-        />
-        <Input
-          type="number"
-          min="0"
-          value={editPrice}
-          onChange={(e) => setEditPrice(e.target.value)}
-          placeholder="Price (Optional)"
-        />
-      </Modal>
-      {error && <p className="error-message">{error}</p>}
-
-      {/* Pagination */}
-      <Pagination
-        current={currentPage}
-        onChange={(page) => setCurrentPage(page)}
-        total={totalItems}
-      />
-    </div>
+    </Layout>
   );
 };
 
